@@ -34,7 +34,7 @@ public class HackerMonitor {
 			for(Entity e : entities) {
 				if(e instanceof EntityPlayer) {
 					EntityPlayer p = (EntityPlayer)e;
-					if(hackersWithinRadius.contains(p.getName().toLowerCase()) && me.getDistanceToEntity(p) < radius) {
+					if(hackersWithinRadius.contains(p.getName().toLowerCase()) && me.getDistanceToEntity(p) > radius) {
 						hackersWithinRadius.remove(p);
 					}
 					if(hackerList.contains(p.getName().toLowerCase()) && me.getDistanceToEntity(p) < radius && !hackersWithinRadius.contains(p)) {
