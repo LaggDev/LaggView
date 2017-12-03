@@ -20,6 +20,11 @@ public class Command extends CommandBase {
 
 	public static boolean toggleSpeed = false;
 	public static ArrayList<Double> times = new ArrayList<Double>();
+	private Main main;
+	
+	public Command(Main m) {
+		this.main = m;
+	}
 	
 	@Override
 	public String getCommandName() {
@@ -34,6 +39,31 @@ public class Command extends CommandBase {
 	@Override
 	public void processCommand(ICommandSender sender, final String[] args) throws CommandException {
 		switch(args[0]) {
+		case "record":
+				switch(args[1]) {
+				case "add":
+					String hackerName = args[2].toLowerCase();
+					if(!main.hackerMonitor.hackerList.contains(hackerName)) {
+						main.hackerMonitor.hackerList.add(hackerName);
+						Util.print(EnumChatFormatting.DARK_PURPLE + "Added " + EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_PURPLE + " to hacker list");
+					} else {
+						Util.print(EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_RED + " is already on your hacker list!");
+					}
+					break;
+				case "remove":
+					hackerName = args[2].toLowerCase();
+					if(main.hackerMonitor.hackerList.contains(hackerName)) {
+						main.hackerMonitor.hackerList.remove(hackerName);
+						Util.print(EnumChatFormatting.DARK_PURPLE + "Removed " + EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_PURPLE + " from hacker list");
+					} else {
+						Util.print(EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_RED + " is not on your hacker list!");
+					}	
+				break;
+				default:
+					Util.print("Couldn't recognize that command, sorry :/");
+					break;
+				}
+			break;
 		case "stats":
 			if(args[1]==null) {
 				Util.print("/stats <player>");
