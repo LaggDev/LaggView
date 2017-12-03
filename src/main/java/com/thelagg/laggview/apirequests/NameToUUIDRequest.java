@@ -4,11 +4,10 @@ import java.util.UUID;
 
 import com.thelagg.laggview.ApiRequest;
 
-public class PlayerRequest extends ApiRequest {
-	public UUID uuid;
-	
-	public PlayerRequest(UUID uuid) {
-		this.uuid = uuid;
+public class NameToUUIDRequest extends ApiRequest {
+
+	public NameToUUIDRequest(String name) {
+		
 	}
 
 	@Override
@@ -17,10 +16,14 @@ public class PlayerRequest extends ApiRequest {
 		
 	}
 
+	public UUID getUUID() {		
+		return null;
+	}
+
 	@Override
 	public boolean equals(ApiRequest r) {
 		// TODO Auto-generated method stub
 		return false;
 	}
-	
+
 }

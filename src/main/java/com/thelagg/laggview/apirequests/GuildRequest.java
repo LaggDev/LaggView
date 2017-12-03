@@ -1,20 +1,12 @@
 package com.thelagg.laggview.apirequests;
 
-import java.util.UUID;
-
 import com.thelagg.laggview.ApiRequest;
 
-public class PlayerRequest extends ApiRequest {
-	public UUID uuid;
-	
-	public PlayerRequest(UUID uuid) {
-		this.uuid = uuid;
-	}
+public class GuildRequest extends ApiRequest {
 
 	@Override
 	public void processRequest() {
-		// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub		
 	}
 
 	@Override
@@ -22,5 +14,5 @@ public class PlayerRequest extends ApiRequest {
 		// TODO Auto-generated method stub
 		return false;
 	}
-	
+
 }
