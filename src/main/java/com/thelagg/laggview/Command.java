@@ -39,6 +39,9 @@ public class Command extends CommandBase {
 	@Override
 	public void processCommand(ICommandSender sender, final String[] args) throws CommandException {
 		switch(args[0]) {
+		case "test":
+			System.out.println(Minecraft.getMinecraft().ingameGUI instanceof GuiOverlay);
+			break;
 		case "record":
 				switch(args[1]) {
 				case "add":

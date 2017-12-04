@@ -1,14 +1,14 @@
 [
 {
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
+  "modid": "laggview",
+  "name": "Lagg View",
+  "description": "Adds a bunch of handy tools to minecraft - made specifically for mega walls players.",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "",
+  "url": "thelagg.com",
   "updateUrl": "",
-  "authorList": ["ExampleDude"],
-  "credits": "The Forge and FML guys, for making this example",
+  "authorList": ["Lagg"],
+  "credits": "",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
