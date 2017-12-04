@@ -51,7 +51,7 @@ public class TabOverlay extends GuiPlayerTabOverlay {
      */
     public String getPlayerName(NetworkPlayerInfo networkPlayerInfoIn)
     {
-        return (networkPlayerInfoIn.getDisplayName() != null ? networkPlayerInfoIn.getDisplayName().getFormattedText() : ScorePlayerTeam.formatPlayerName(networkPlayerInfoIn.getPlayerTeam(), networkPlayerInfoIn.getGameProfile().getName())).replaceAll("\u00A7k", "");
+    	return (networkPlayerInfoIn.getDisplayName() != null ? networkPlayerInfoIn.getDisplayName().getFormattedText() : ScorePlayerTeam.formatPlayerName(networkPlayerInfoIn.getPlayerTeam(), networkPlayerInfoIn.getGameProfile().getName())).replaceAll("\u00A7k", "");
     }
 
     public static String getPlayerNameStatic(NetworkPlayerInfo networkPlayerInfoIn)

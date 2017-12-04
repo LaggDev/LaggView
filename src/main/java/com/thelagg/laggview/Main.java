@@ -1,5 +1,4 @@
 package com.thelagg.laggview;
-//--username LeviBengs@gmail.com --password levi1506
 
 import java.util.List;
 
@@ -30,17 +29,19 @@ public class Main {
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
 		mc = Minecraft.getMinecraft();
-		//MinecraftForge.EVENT_BUS.register(this);
+		MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(hackerMonitor = new HackerMonitor(mc));
         ClientCommandHandler.instance.registerCommand(new Command(this));
 	}
 	
-	@EventHandler
-	public void postinit(FMLPostInitializationEvent event) {
-		try {
-			mc.ingameGUI = new GuiOverlay(mc);
-		} catch (Exception e) {
-			e.printStackTrace();
+	@SubscribeEvent
+	public void onTick(ClientTickEvent event) {
+		if(!(mc.ingameGUI instanceof GuiOverlay)) {
+			try {
+				mc.ingameGUI = new GuiOverlay(mc);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
