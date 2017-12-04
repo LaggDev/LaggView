@@ -5,19 +5,22 @@ import java.util.*;
 import com.thelagg.laggview.apirequests.GuildRequest;
 import com.thelagg.laggview.apirequests.NameHistoryRequest;
 import com.thelagg.laggview.apirequests.PlayerRequest;
+
+import net.minecraft.client.Minecraft;
+
 import com.thelagg.laggview.apirequests.NameToUUIDRequest;
 
 public class ApiCache {
-	Map<UUID,PlayerRequest> playerCache = new HashMap<UUID,PlayerRequest>();
-	Map<UUID,GuildRequest> guildCache = new HashMap<UUID,GuildRequest>();
-	Map<UUID,NameHistoryRequest> nameHistoryCache = new HashMap<UUID,NameHistoryRequest>();
-	Map<UUID,NameToUUIDRequest> nameToUUIDCache = new HashMap<UUID,NameToUUIDRequest>();
-	ArrayList<ApiRequest> requestQueue = new ArrayList<ApiRequest>();
+	public Map<UUID,PlayerRequest> playerCache = new HashMap<UUID,PlayerRequest>();
+	public Map<UUID,GuildRequest> guildCache = new HashMap<UUID,GuildRequest>();
+	public Map<UUID,NameHistoryRequest> nameHistoryCache = new HashMap<UUID,NameHistoryRequest>();
+	public Map<String,NameToUUIDRequest> nameToUUIDCache = new HashMap<String,NameToUUIDRequest>();
+	public ArrayList<ApiRequest> requestQueue = new ArrayList<ApiRequest>();
 	
 	public PlayerRequest getPlayerResult(String name, int priority) {
-		NameToUUIDRequest uuidRequest = getUuidToNameRequest(name,priority);
+		NameToUUIDRequest uuidRequest = getNameToUUIDRequest(name,priority);
 		while(uuidRequest==null) {
-			uuidRequest = getUuidToNameRequest(name,priority);
+			uuidRequest = getNameToUUIDRequest(name,priority);
 		}
 		PlayerRequest playerRequest = getPlayerResult(uuidRequest.getUUID(),priority);
 		while(playerRequest==null) {
@@ -49,13 +52,11 @@ public class ApiCache {
 		return false;
 	}
 	
-	public NameToUUIDRequest getUuidToNameRequest(String name, int priority) {
+	public NameToUUIDRequest getNameToUUIDRequest(String name, int priority) {
 		NameToUUIDRequest value = nameToUUIDCache.get(name);
 		if(value==null) {
 			NameToUUIDRequest r = new NameToUUIDRequest(name);
-			if(!isRequestAlreadyQueued(r)) {
-				r.queue(priority);
-			}
+			r.queue(priority);
 			if(priority<1) {
 				while(value==null) {
 					value = nameToUUIDCache.get(name);
@@ -63,6 +64,14 @@ public class ApiCache {
 			}
 		}
 		return value;		
+	}
+	
+	public void processFirstRequest() {
+		if(requestQueue.get(0)==null) {
+			return;
+		}
+		ApiRequest r = requestQueue.get(0);
+		r.processRequest();
 	}
 	
 }

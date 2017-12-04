@@ -19,8 +19,7 @@ public class PlayerRequest extends ApiRequest {
 
 	@Override
 	public boolean equals(ApiRequest r) {
-		// TODO Auto-generated method stub
-		return false;
+		return r instanceof PlayerRequest && uuid==((PlayerRequest)r).uuid;
 	}
 	
 }
