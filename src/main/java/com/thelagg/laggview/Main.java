@@ -1,6 +1,10 @@
 package com.thelagg.laggview;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
+
+import javax.swing.Timer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -25,13 +29,26 @@ import scala.actors.threadpool.Arrays;
 public class Main {
 	Minecraft mc;
 	public HackerMonitor hackerMonitor;
+	public ApiCache apiCache;
+	public static Main instance;
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
+		instance = this;
 		mc = Minecraft.getMinecraft();
+		apiCache = new ApiCache();
 		MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(hackerMonitor = new HackerMonitor(mc));
         ClientCommandHandler.instance.registerCommand(new Command(this));
+        new Timer(10,new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				apiCache.processFirstRequest();
+			}
+        }).start();
+	}
+	
+	public static Main getInstance() {
+		return instance;
 	}
 	
 	@SubscribeEvent

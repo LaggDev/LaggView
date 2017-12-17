@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.Ordering;
+import com.thelagg.laggview.apirequests.NameToUUIDRequest;
+import com.thelagg.laggview.apirequests.PlayerRequest;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;
@@ -40,8 +42,11 @@ public class Command extends CommandBase {
 	public void processCommand(ICommandSender sender, final String[] args) throws CommandException {
 		switch(args[0]) {
 		case "test":
-			System.out.println(Minecraft.getMinecraft().ingameGUI instanceof GuiOverlay);
+			PlayerRequest playerRequest = main.apiCache.getPlayerResult("Lagg", 0);
+			System.out.println(playerRequest.getFinalKDR());
+			
 			break;
+		
 		case "record":
 				switch(args[1]) {
 				case "add":

@@ -34,3 +34,9 @@ run
 /README.txt
 /usercache.json
 /usernamecache.json
+/crash-reports/
+/gradle/
+/saves/
+/config/
+/logs/
+/servers.dat

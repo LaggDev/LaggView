@@ -6,6 +6,7 @@ import java.util.List;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.mojang.authlib.GameProfile;
+import com.thelagg.laggview.apirequests.PlayerRequest;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -189,8 +190,14 @@ public class TabOverlay extends GuiPlayerTabOverlay {
             if (k4 < list.size())
             {
                 NetworkPlayerInfo networkplayerinfo1 = (NetworkPlayerInfo)list.get(k4);
+                
                 String s1 = this.getPlayerName(networkplayerinfo1);
                 GameProfile gameprofile = networkplayerinfo1.getGameProfile();
+                
+                String name = gameprofile.getName();                	
+                PlayerRequest playerRequest = Main.getInstance().apiCache.getPlayerResult(name, 1);
+                String finalkdr = playerRequest==null?"?":Double.toString(Math.round(playerRequest.getFinalKDR()*100.0)/100.0);
+                s1 += " " + EnumChatFormatting.GOLD + finalkdr;
 
                 if (flag)
                 {
@@ -374,6 +381,7 @@ public class TabOverlay extends GuiPlayerTabOverlay {
                     }
 
                     this.mc.fontRendererObj.drawStringWithShadow(s, (float)((p_175247_5_ + p_175247_4_) / 2 - this.mc.fontRendererObj.getStringWidth(s) / 2), (float)p_175247_2_, i1);
+                    System.out.println(s);
                 }
             }
         }
@@ -406,9 +414,7 @@ public class TabOverlay extends GuiPlayerTabOverlay {
     @SideOnly(Side.CLIENT)
     public static class PlayerComparator implements Comparator<NetworkPlayerInfo>
         {
-            PlayerComparator()
-            {
-            }
+            PlayerComparator() {}
 
             public int compare(NetworkPlayerInfo p_compare_1_, NetworkPlayerInfo p_compare_2_)
             {
