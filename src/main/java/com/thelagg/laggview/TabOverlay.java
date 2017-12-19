@@ -3,6 +3,8 @@ package com.thelagg.laggview;
 import java.util.Comparator;
 import java.util.List;
 
+import org.lwjgl.opengl.GL11;
+
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.mojang.authlib.GameProfile;
@@ -195,9 +197,9 @@ public class TabOverlay extends GuiPlayerTabOverlay {
                 GameProfile gameprofile = networkplayerinfo1.getGameProfile();
                 
                 String name = gameprofile.getName();                	
-                PlayerRequest playerRequest = Main.getInstance().apiCache.getPlayerResult(name, 1);
+                PlayerRequest playerRequest = LaggView.getInstance().apiCache.getPlayerResult(name, 1);
                 String finalkdr = playerRequest==null?"?":Double.toString(Math.round(playerRequest.getFinalKDR()*100.0)/100.0);
-                s1 += " " + EnumChatFormatting.GOLD + finalkdr;
+                //s1 += " " + EnumChatFormatting.GOLD + finalkdr;
 
                 if (flag)
                 {
@@ -239,7 +241,11 @@ public class TabOverlay extends GuiPlayerTabOverlay {
                     }
                 }
 
-                this.drawPing(i1, j2 - (flag ? 9 : 0), k2, networkplayerinfo1);
+                //this.drawPing(i1, j2 - (flag ? 9 : 0), k2, networkplayerinfo1);
+                int stringSize = mc.fontRendererObj.getStringWidth(finalkdr);
+                int x = j2 - (flag ? 9 : 0) + i1 - 1 - stringSize, y = k2;
+                this.mc.fontRendererObj.drawStringWithShadow(EnumChatFormatting.GOLD + finalkdr, x, y, -1);
+                
             }
         }
 
@@ -381,7 +387,6 @@ public class TabOverlay extends GuiPlayerTabOverlay {
                     }
 
                     this.mc.fontRendererObj.drawStringWithShadow(s, (float)((p_175247_5_ + p_175247_4_) / 2 - this.mc.fontRendererObj.getStringWidth(s) / 2), (float)p_175247_2_, i1);
-                    System.out.println(s);
                 }
             }
         }

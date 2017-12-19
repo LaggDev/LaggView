@@ -26,11 +26,11 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import scala.actors.threadpool.Arrays;
 
 @Mod(modid = "laggview", version = "1.0", name = "Lagg View", acceptedMinecraftVersions = "[1.8.9]", useMetadata = true)
-public class Main {
+public class LaggView {
 	Minecraft mc;
 	public HackerMonitor hackerMonitor;
 	public ApiCache apiCache;
-	public static Main instance;
+	public static LaggView instance;
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
@@ -47,7 +47,7 @@ public class Main {
         }).start();
 	}
 	
-	public static Main getInstance() {
+	public static LaggView getInstance() {
 		return instance;
 	}
 	

@@ -22,9 +22,9 @@ public class Command extends CommandBase {
 
 	public static boolean toggleSpeed = false;
 	public static ArrayList<Double> times = new ArrayList<Double>();
-	private Main main;
+	private LaggView main;
 	
-	public Command(Main m) {
+	public Command(LaggView m) {
 		this.main = m;
 	}
 	
