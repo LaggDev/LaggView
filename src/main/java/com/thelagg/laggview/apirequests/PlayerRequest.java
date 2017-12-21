@@ -47,11 +47,6 @@ public class PlayerRequest extends ApiRequest {
 	}
 	
 	public String getNickname() {
-		if((String)getObjectAtPath("player/lastNick")==null) {
-			System.out.println("null " + this.getName());
-		} else {
-			System.out.println((String)getObjectAtPath("player/lastNick") + " " + this.getName());
-		}
 		return (String)getObjectAtPath("player/lastNick");
 	}
 	
