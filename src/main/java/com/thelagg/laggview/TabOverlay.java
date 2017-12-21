@@ -2,6 +2,7 @@ package com.thelagg.laggview;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 import org.lwjgl.opengl.GL11;
 
@@ -9,6 +10,7 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.mojang.authlib.GameProfile;
 import com.thelagg.laggview.apirequests.PlayerRequest;
+import com.thelagg.laggview.apirequests.SessionRequest;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -198,9 +200,19 @@ public class TabOverlay extends GuiPlayerTabOverlay {
                 
                 String name = gameprofile.getName();                	
                 PlayerRequest playerRequest = LaggView.getInstance().apiCache.getPlayerResult(name, 1);
+                SessionRequest sessionRequest = LaggView.getInstance().apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
+                String realName = "";
+                if(playerRequest==null && sessionRequest!=null) {
+                	PlayerRequest realPlayer = sessionRequest.findByNick(name);
+                	if(realPlayer!=null && realPlayer.getName()!=null) {
+                		realName += EnumChatFormatting.LIGHT_PURPLE + " (" + realPlayer.getName() + ")";
+                		playerRequest = realPlayer;
+                	}
+                }
+                s1 += realName;
+                
                 String finalkdr = playerRequest==null?"?":Double.toString(Math.round(playerRequest.getFinalKDR()*100.0)/100.0);
-                //s1 += " " + EnumChatFormatting.GOLD + finalkdr;
-
+                
                 if (flag)
                 {
                     EntityPlayer entityplayer = this.mc.theWorld.getPlayerEntityByUUID(gameprofile.getId());

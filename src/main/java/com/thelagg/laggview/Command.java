@@ -1,11 +1,13 @@
 package com.thelagg.laggview;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.Ordering;
 import com.thelagg.laggview.apirequests.NameToUUIDRequest;
 import com.thelagg.laggview.apirequests.PlayerRequest;
+import com.thelagg.laggview.apirequests.SessionRequest;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;
@@ -42,11 +44,14 @@ public class Command extends CommandBase {
 	public void processCommand(ICommandSender sender, final String[] args) throws CommandException {
 		switch(args[0]) {
 		case "test":
-			PlayerRequest playerRequest = main.apiCache.getPlayerResult("Lagg", 0);
-			System.out.println(playerRequest.getFinalKDR());
-			
+			new Thread() {
+				public void run() {
+					SessionRequest s = main.apiCache.getSessionResult(Minecraft.getMinecraft().thePlayer.getUniqueID(), 0);
+					System.out.println(Arrays.toString(s.getUUIDs()));
+					Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("done"));
+				}
+			}.start();
 			break;
-		
 		case "record":
 				switch(args[1]) {
 				case "add":

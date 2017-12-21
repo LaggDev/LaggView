@@ -5,6 +5,7 @@ import java.util.*;
 import com.thelagg.laggview.apirequests.GuildRequest;
 import com.thelagg.laggview.apirequests.NameHistoryRequest;
 import com.thelagg.laggview.apirequests.PlayerRequest;
+import com.thelagg.laggview.apirequests.SessionRequest;
 
 import net.minecraft.client.Minecraft;
 
@@ -15,6 +16,7 @@ public class ApiCache {
 	public Map<UUID,GuildRequest> guildCache;
 	public Map<UUID,NameHistoryRequest> nameHistoryCache;
 	public Map<String,NameToUUIDRequest> nameToUUIDCache;
+	public Map<UUID,SessionRequest> sessionCache;
 	public ArrayList<ApiRequest> requestQueue;
 	
 	public ApiCache() {
@@ -22,6 +24,7 @@ public class ApiCache {
 		guildCache = new HashMap<UUID,GuildRequest>();
 		nameHistoryCache = new HashMap<UUID,NameHistoryRequest>();
 		nameToUUIDCache = new HashMap<String,NameToUUIDRequest>();
+		sessionCache = new HashMap<UUID,SessionRequest>();
 		requestQueue = new ArrayList<ApiRequest>();
 	}
 	
@@ -44,6 +47,20 @@ public class ApiCache {
 			playerRequest = getPlayerResult(uuidRequest.getUUID(),priority);
 		}
 		return playerRequest;
+	}
+	
+	public SessionRequest getSessionResult(UUID uuid, int priority) {
+		SessionRequest value = sessionCache.get(uuid);
+		if(value==null) {
+			SessionRequest r = new SessionRequest(uuid,this);
+			r.queue(priority);
+			if(priority<1) {
+				while(value==null) {
+					value = sessionCache.get(uuid);
+				}
+			}
+		}
+		return value;
 	}
 	
 	public PlayerRequest getPlayerResult(UUID uuid, int priority) {

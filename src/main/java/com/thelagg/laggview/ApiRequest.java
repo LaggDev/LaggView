@@ -16,4 +16,23 @@ public abstract class ApiRequest {
 			apiCache.requestQueue.add(this);
 		}
 	}
+	
+
+	protected Object getNextObject(JSONObject j, String search) {
+		return j==null?null:j.get(search);
+	}
+	
+	protected Object getObjectAtPath(String pathStr) {
+		String[] path = pathStr.split("/");
+		JSONObject j = this.result;
+		for(String s : path) {
+			Object o = getNextObject(j,s);
+			if(o instanceof JSONObject) {
+				j = (JSONObject) o;
+			} else {
+				return o;
+			}
+		}
+		return j;
+	}
 }

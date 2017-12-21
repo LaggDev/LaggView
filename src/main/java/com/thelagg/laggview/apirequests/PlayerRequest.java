@@ -32,24 +32,6 @@ public class PlayerRequest extends ApiRequest {
 		this.apiCache.playerCache.put(uuid, this);
 		this.apiCache.requestQueue.remove(this);
 	}
-
-	private Object getNextObject(JSONObject j, String search) {
-		return j==null?null:j.get(search);
-	}
-	
-	private Object getObjectAtPath(String pathStr) {
-		String[] path = pathStr.split("/");
-		JSONObject j = this.result;
-		for(String s : path) {
-			Object o = getNextObject(j,s);
-			if(o instanceof JSONObject) {
-				j = (JSONObject) o;
-			} else {
-				return o;
-			}
-		}
-		return j;
-	}
 	
 	public double getFinalKDR() {
 		try {
@@ -64,9 +46,22 @@ public class PlayerRequest extends ApiRequest {
 		}
 	}
 	
+	public String getNickname() {
+		if((String)getObjectAtPath("player/lastNick")==null) {
+			System.out.println("null " + this.getName());
+		} else {
+			System.out.println((String)getObjectAtPath("player/lastNick") + " " + this.getName());
+		}
+		return (String)getObjectAtPath("player/lastNick");
+	}
+	
 	@Override
 	public boolean equals(ApiRequest r) {
 		return ((r instanceof PlayerRequest) && (this.uuid.equals(((PlayerRequest)r).uuid)));
+	}
+
+	public String getName() {
+		return (String)getObjectAtPath("player/displayname");
 	}
 	
 }
