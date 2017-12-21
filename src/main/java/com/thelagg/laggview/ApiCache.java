@@ -13,7 +13,7 @@ import com.thelagg.laggview.apirequests.NameToUUIDRequest;
 
 public class ApiCache {
 	public Map<UUID,PlayerRequest> playerCache;
-	public Map<UUID,GuildRequest> guildCache;
+	public Map<Object,GuildRequest> guildCache;
 	public Map<UUID,NameHistoryRequest> nameHistoryCache;
 	public Map<String,NameToUUIDRequest> nameToUUIDCache;
 	public Map<UUID,SessionRequest> sessionCache;
@@ -21,11 +21,60 @@ public class ApiCache {
 	
 	public ApiCache() {
 		playerCache = new HashMap<UUID,PlayerRequest>();
-		guildCache = new HashMap<UUID,GuildRequest>();
+		guildCache = new HashMap<Object,GuildRequest>();
 		nameHistoryCache = new HashMap<UUID,NameHistoryRequest>();
 		nameToUUIDCache = new HashMap<String,NameToUUIDRequest>();
 		sessionCache = new HashMap<UUID,SessionRequest>();
 		requestQueue = new ArrayList<ApiRequest>();
+	}
+	
+	public GuildRequest getGuildResult(UUID uuid, int priority) {
+		GuildRequest value = guildCache.get(uuid);
+		if(value==null) {
+			GuildRequest r = new GuildRequest(uuid,this);
+			r.queue(priority);
+			if(priority<1) {
+				while(value==null) {
+					value = guildCache.get(uuid);
+				}
+			}
+		}
+		return value;
+	}
+	
+	public GuildRequest getGuildResultByGuildName(String name, int priority) {
+		GuildRequest value = guildCache.get(name);
+		if(value==null) {
+			GuildRequest r = new GuildRequest(name,this);
+			r.queue(priority);
+			if(priority<1) {
+				while(value==null) {
+					value = guildCache.get(name);
+				}
+			}
+		}
+		return value;
+	}
+	
+	public GuildRequest getGuildResult(String playerUsername, int priority) {
+		NameToUUIDRequest uuidRequest = getNameToUUIDRequest(playerUsername,priority);
+		if(uuidRequest==null && priority>=1) {
+			return null;
+		}
+		while(uuidRequest==null) {
+			uuidRequest = getNameToUUIDRequest(playerUsername,priority);
+		}
+		if(uuidRequest.getUUID()==null) {
+			return null;
+		}
+		GuildRequest guildRequest = getGuildResult(uuidRequest.getUUID(),priority);
+		if(guildRequest==null && priority>=1) {
+			return null;
+		}
+		while(guildRequest==null) {
+			guildRequest = getGuildResult(uuidRequest.getUUID(),priority);
+		}
+		return guildRequest;
 	}
 	
 	public PlayerRequest getPlayerResult(String name, int priority) {
