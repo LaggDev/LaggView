@@ -40,6 +40,7 @@ public class SessionRequest extends ApiRequest {
 	public UUID[] getUUIDs() {
 		try {
 			JSONArray arr = (JSONArray) this.getObjectAtPath("session/players");
+			if(arr==null) return null;
 			ArrayList<UUID> uuids = new ArrayList<UUID>();
 			for(int i = 0; i<arr.size(); i++) {
 				uuids.add(Util.getUUID((String)(arr.get(i))));
@@ -51,7 +52,18 @@ public class SessionRequest extends ApiRequest {
 		return null;
 	}
 
+	public long getTime() {
+		try {
+			return (Long)this.getObjectAtPath("timeRequested");
+		} catch (Exception e) {
+			return System.currentTimeMillis();
+		}
+	}
+	
 	public PlayerRequest findByNick(String nick) {
+		if(this.getUUIDs()==null) {
+			return null;
+		}
 		for(UUID uuid : this.getUUIDs()) {
 			PlayerRequest r = this.apiCache.getPlayerResult(uuid, 1);
 			if(r!=null && r.getNickname()!=null && r.getNickname().equals(nick)) {

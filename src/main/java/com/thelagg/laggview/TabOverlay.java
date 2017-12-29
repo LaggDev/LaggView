@@ -201,6 +201,9 @@ public class TabOverlay extends GuiPlayerTabOverlay {
                 String name = gameprofile.getName();                	
                 PlayerRequest playerRequest = LaggView.getInstance().apiCache.getPlayerResult(name, 1);
                 SessionRequest sessionRequest = LaggView.getInstance().apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
+                if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
+                	LaggView.getInstance().apiCache.update(sessionRequest);
+                }
                 String realName = "";
                 if(playerRequest==null && sessionRequest!=null) {
                 	PlayerRequest realPlayer = sessionRequest.findByNick(name);
@@ -211,7 +214,7 @@ public class TabOverlay extends GuiPlayerTabOverlay {
                 }
                 s1 += realName;
                 
-                String finalkdr = playerRequest==null?"?":Double.toString(Math.round(playerRequest.getFinalKDR()*100.0)/100.0);
+                String finalkdr = playerRequest==null?"?":playerRequest.getFinalKDRString();
                 
                 if (flag)
                 {
@@ -252,12 +255,18 @@ public class TabOverlay extends GuiPlayerTabOverlay {
                         this.drawScoreboardValues(scoreObjectiveIn, k2, gameprofile.getName(), k5, l5, networkplayerinfo1);
                     }
                 }
-
+                
                 //this.drawPing(i1, j2 - (flag ? 9 : 0), k2, networkplayerinfo1);
                 int stringSize = mc.fontRendererObj.getStringWidth(finalkdr);
+                double scale = 8.0/(double)(stringSize); //scale = 8/stringSize, stringSize = 8/scale
+                GlStateManager.pushMatrix();
+                GlStateManager.scale(scale, scale, 1.0);
                 int x = j2 - (flag ? 9 : 0) + i1 - 1 - stringSize, y = k2;
+                x = (int)(((double)(x)) * 1.0/scale) + 8;
+                y = (int)(((double)(y)) * 1.0/scale) + 4;
                 this.mc.fontRendererObj.drawStringWithShadow(EnumChatFormatting.GOLD + finalkdr, x, y, -1);
-                
+                GlStateManager.scale(8.0/scale, 8.0/scale, 1.0);
+                GlStateManager.popMatrix();
             }
         }
 

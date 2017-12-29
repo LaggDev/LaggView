@@ -1,6 +1,8 @@
 package com.thelagg.laggview.apirequests;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.UUID;
 
 import org.json.simple.JSONObject;
@@ -10,6 +12,8 @@ import org.json.simple.parser.ParseException;
 import com.thelagg.laggview.ApiCache;
 import com.thelagg.laggview.ApiRequest;
 import com.thelagg.laggview.URLConnectionReader;
+
+import net.minecraft.util.EnumChatFormatting;
 
 public class PlayerRequest extends ApiRequest {
 	public UUID uuid;
@@ -33,13 +37,22 @@ public class PlayerRequest extends ApiRequest {
 		this.apiCache.requestQueue.remove(this);
 	}
 	
+	public String getFinalKDRString() {
+		double finalKdr = this.getFinalKDR();
+		DecimalFormat df = new DecimalFormat("0.0");
+		return EnumChatFormatting.GOLD + df.format(finalKdr);
+	}
+	
 	public double getFinalKDR() {
 		try {
 			Long final_kills = (Long) getObjectAtPath("player/stats/Walls3/final_kills");
 			Long finalDeaths = (Long)getObjectAtPath("player/stats/Walls3/finalDeaths");
 			Long final_deaths = (Long)getObjectAtPath("player/stats/Walls3/final_deaths");
 			double finalKillsTotal = final_kills==null?0:final_kills;
-			double finalDeathsTotal = (finalDeaths==null?0:finalDeaths) + (final_deaths==null?0:final_deaths); 
+			double finalDeathsTotal = (finalDeaths==null?0:finalDeaths) + (final_deaths==null?0:final_deaths);
+			if(finalDeathsTotal==0) {
+				return 0;
+			}
 			return finalKillsTotal/finalDeathsTotal;
 		} catch (NullPointerException e) {
 			return 0;

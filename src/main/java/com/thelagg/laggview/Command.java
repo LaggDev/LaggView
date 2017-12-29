@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.Ordering;
+import com.thelagg.laggview.apirequests.NameHistoryRequest;
 import com.thelagg.laggview.apirequests.NameToUUIDRequest;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
@@ -46,9 +47,9 @@ public class Command extends CommandBase {
 		case "test":
 			new Thread() {
 				public void run() {
-					SessionRequest s = main.apiCache.getSessionResult(Minecraft.getMinecraft().thePlayer.getUniqueID(), 0);
-					System.out.println(Arrays.toString(s.getUUIDs()));
-					Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("done"));
+					NameToUUIDRequest nameToUUID = main.apiCache.getNameToUUIDRequest(args[1], 0);
+					NameHistoryRequest nameHistory = main.apiCache.getNameHistoryResult(nameToUUID.getUUID(), 0);
+					nameHistory.print();
 				}
 			}.start();
 			break;

@@ -28,6 +28,10 @@ public class ApiCache {
 		requestQueue = new ArrayList<ApiRequest>();
 	}
 	
+	public void update(ApiRequest r) {
+		requestQueue.add(r);
+	}
+	
 	public GuildRequest getGuildResult(UUID uuid, int priority) {
 		GuildRequest value = guildCache.get(uuid);
 		if(value==null) {
@@ -106,6 +110,20 @@ public class ApiCache {
 			if(priority<1) {
 				while(value==null) {
 					value = sessionCache.get(uuid);
+				}
+			}
+		}
+		return value;
+	}
+	
+	public NameHistoryRequest getNameHistoryResult(UUID uuid, int priority) {
+		NameHistoryRequest value = nameHistoryCache.get(uuid);
+		if(value==null) {
+			NameHistoryRequest r = new NameHistoryRequest(uuid,this);
+			r.queue(priority);
+			if(priority<1) {
+				while(value==null) {
+					value = nameHistoryCache.get(uuid);
 				}
 			}
 		}

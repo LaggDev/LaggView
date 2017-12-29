@@ -58,6 +58,7 @@ public class Settings {
 		return null;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public String toString() {
 		JSONObject o = new JSONObject();
 		o.put("tabStat", tabStat.toString());
