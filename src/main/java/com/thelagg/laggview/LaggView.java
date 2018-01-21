@@ -77,14 +77,6 @@ public class LaggView {
 				e.printStackTrace();
 			}
 		}
-		NetworkManager nm = null;
-		try {
-			Field fnetworkManager = Minecraft.class.getDeclaredField("myNetworkManager");
-			fnetworkManager.setAccessible(true);
-			nm = ((NetworkManager)fnetworkManager.get(mc));
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e1) {
-			e1.printStackTrace();
-		}
 
 		if(mc.thePlayer!=null && mc.thePlayer.sendQueue!=null && !(mc.thePlayer.sendQueue instanceof MyPacketHandler)) {
 			try {
@@ -102,17 +94,13 @@ public class LaggView {
 				NetworkManager networkManager = (NetworkManager) fnetManager.get(sendQueue);
 				GameProfile gameProfile = (GameProfile) fprofile.get(sendQueue);
 				fsendQueue.set(mc.thePlayer, new MyPacketHandler(mc,guiScreen,networkManager,gameProfile));
-				try {
-					nm.setNetHandler(mc.thePlayer.sendQueue);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
 				
 			} catch (Exception e) {
 				System.err.println("error replacing PacketHandler");
 				e.printStackTrace();
 			}
 		}
+
 	}
 	
 	@SubscribeEvent
