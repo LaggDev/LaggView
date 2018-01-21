@@ -12,8 +12,9 @@ import javax.swing.Timer;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
-import com.thelagg.laggview.hud.HUD;
 import com.mojang.authlib.GameProfile;
+
+import com.thelagg.laggview.hud.GameUpdater;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -61,7 +62,7 @@ public class LaggView {
 				apiCache.processFirstRequest();
 			}
         }).start();
-        MinecraftForge.EVENT_BUS.register(new HUD());
+        MinecraftForge.EVENT_BUS.register(new GameUpdater());
 	}
 	
 	public static LaggView getInstance() {

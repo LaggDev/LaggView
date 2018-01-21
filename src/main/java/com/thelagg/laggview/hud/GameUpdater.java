@@ -1,5 +1,6 @@
 package com.thelagg.laggview.hud;
 
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -12,49 +13,23 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public class HUD {
+public class GameUpdater {
 	
-	public enum GameType {
-		MEGA_WALLS("MEGA WALLS"),
-		BLITZ_SURVIVAL_GAMES("BLITZ SG"),
-		WARLORDS("WARLORDS"),
-		UHC_CHAMPIONS("UHC CHAMPIONS"),
-		THE_TNT_GAMES("THE TNT GAMES"),
-		COPS_AND_CRIMS("COPS AND CRIMS"),
-		ARCADE_GAMES("ARCADE GAMES"),
-		SPEED_UHC("SPEED UHC"),
-		SKYWARS("SKYWARS"),
-		HOUSING("Housing"),
-		CRAZY_WALLS("CRAZY WALLS"),
-		SMASH_HEROES("SMASH HEROES"),
-		SKYCLASH("SKYCLASH"),
-		BED_WARS("BED WARS"),
-		MURDER_MYSTERY("MURDER MYSTERY"),
-		BUILD_BATTLE("BUILD BATTLE"),
-		PROTOTYPE_GAMES("PROTOTYPE"),
-		THE_WALLS("THE WALLS"),
-		QUAKECRAFT("QUAKECRAFT"),
-		VAMPIREZ("VAMPIREZ"),
-		PAINTBALL_WARFARE("PAINTBALL"),
-		ARENA_BRAWL("ARENA BRAWL"),
-		TURBO_KART_RACERS("TURBO KART RACERS"),
-		CLASSIC_GAMES("CLASSIC GAMES"),
-		BATTLE_ROYALE("BATTLE ROYALE"),
-		HIDE_AND_SEEK("HIDE AND SEEK"),
-		HYPIXEL_ZOMBIES("ZOMBIES"),
-		DUELS("DUELS");
+	private ArrayList<Game> allGames;
+	private Game currentGame;
+	private long lastWorldLoad;
+	boolean waitingForServerId;
+	
+	public GameUpdater() {
+		this.allGames = new ArrayList<Game>();
 		
-		String nameOnScoreboard;
-		
-		private GameType(String nameOnScoreboard) {
-			this.nameOnScoreboard = nameOnScoreboard;
-		}
 	}
 	
-	private long lastWorldLoad;
-	private GameType game;
-	boolean waitingForServerId;
-	String serverId;
+	public static void getGame() {
+		
+	}
+	
+
 	
 	@SubscribeEvent
 	public void onWorldLoad(WorldEvent.Load event) {
@@ -80,8 +55,8 @@ public class HUD {
 				}
 				String str = event.world.getScoreboard().getObjectiveInDisplaySlot(1).getDisplayName();
 				Logger.getLogger("laggview").log(Level.INFO,"GAME: " + str + " " + System.currentTimeMillis());
-				for(GameType type : GameType.values()) {
-					if(type.nameOnScoreboard.equals(str.replaceAll("\u00A7.{1}", "").trim())) {
+				for(Game.GameType type : Game.GameType.values()) {
+					if(type.getNameOnScoreboard().equals(str.replaceAll("\u00A7.{1}", "").trim())) {
 						game = type;
 						Logger.getLogger("laggview").log(Level.INFO, "MATCHED WITH: " + type.name());
 						Minecraft.getMinecraft().thePlayer.sendChatMessage("/whereami");
@@ -104,4 +79,5 @@ public class HUD {
 			serverId = m.group(1);
 		}
 	}
+	
 }
