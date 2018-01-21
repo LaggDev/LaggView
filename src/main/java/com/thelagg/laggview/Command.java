@@ -1,8 +1,12 @@
 package com.thelagg.laggview;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 
 import com.google.common.collect.Ordering;
 import com.thelagg.laggview.apirequests.NameHistoryRequest;
@@ -10,6 +14,7 @@ import com.thelagg.laggview.apirequests.NameToUUIDRequest;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
@@ -18,8 +23,12 @@ import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
+import net.minecraft.network.play.client.C0APacketAnimation;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.MovingObjectPosition;
 
 public class Command extends CommandBase {
 
@@ -47,9 +56,21 @@ public class Command extends CommandBase {
 		case "test":
 			new Thread() {
 				public void run() {
-					NameToUUIDRequest nameToUUID = main.apiCache.getNameToUUIDRequest(args[1], 0);
-					NameHistoryRequest nameHistory = main.apiCache.getNameHistoryResult(nameToUUID.getUUID(), 0);
-					nameHistory.print();
+					try {
+						MovingObjectPosition mop = Minecraft.getMinecraft().getRenderViewEntity().rayTrace(200, 1.0F);
+						if(mop==null) return;
+						EnumFacing blockHitSide = mop.sideHit;
+						Block blockLookingAt = Minecraft.getMinecraft().theWorld.getBlockState(mop.getBlockPos()).getBlock();
+						if(!blockLookingAt.getLocalizedName().equals("Chest")) return;
+				        float f = (float)(mop.hitVec.xCoord - (double)mop.getBlockPos().getX());
+				        float f1 = (float)(mop.hitVec.yCoord - (double)mop.getBlockPos().getY());
+				        float f2 = (float)(mop.hitVec.zCoord - (double)mop.getBlockPos().getZ());
+						Minecraft.getMinecraft().thePlayer.sendQueue.addToSendQueue(new C08PacketPlayerBlockPlacement(mop.getBlockPos(), blockHitSide.getIndex(), Minecraft.getMinecraft().thePlayer.getHeldItem(), f, f1, f2));
+						Thread.sleep(1000);
+						LogManager.getLogger(LaggView.MODID).log(Level.INFO, Minecraft.getMinecraft().thePlayer.openContainer.getInventory().get(1).getDisplayName());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}.start();
 			break;

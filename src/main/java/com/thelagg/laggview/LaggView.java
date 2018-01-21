@@ -2,6 +2,7 @@ package com.thelagg.laggview;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,11 +13,15 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
 import com.thelagg.laggview.hud.HUD;
+import com.mojang.authlib.GameProfile;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -69,6 +74,42 @@ public class LaggView {
 			try {
 				mc.ingameGUI = new GuiOverlay(mc);
 			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		NetworkManager nm = null;
+		try {
+			Field fnetworkManager = Minecraft.class.getDeclaredField("myNetworkManager");
+			fnetworkManager.setAccessible(true);
+			nm = ((NetworkManager)fnetworkManager.get(mc));
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e1) {
+			e1.printStackTrace();
+		}
+
+		if(mc.thePlayer!=null && mc.thePlayer.sendQueue!=null && !(mc.thePlayer.sendQueue instanceof MyPacketHandler)) {
+			try {
+				Field fsendQueue = mc.thePlayer.getClass().getDeclaredField("sendQueue");
+				fsendQueue.setAccessible(true);
+				NetHandlerPlayClient sendQueue = (NetHandlerPlayClient) fsendQueue.get(mc.thePlayer);
+				Field fguiScreen = sendQueue.getClass().getDeclaredField("guiScreenServer");
+				fguiScreen.setAccessible(true);
+				Field fnetManager = sendQueue.getClass().getDeclaredField("netManager");
+				fnetManager.setAccessible(true);
+				Field fprofile = sendQueue.getClass().getDeclaredField("profile");
+				fprofile.setAccessible(true);
+				
+				GuiScreen guiScreen = (GuiScreen) fguiScreen.get(sendQueue);
+				NetworkManager networkManager = (NetworkManager) fnetManager.get(sendQueue);
+				GameProfile gameProfile = (GameProfile) fprofile.get(sendQueue);
+				fsendQueue.set(mc.thePlayer, new MyPacketHandler(mc,guiScreen,networkManager,gameProfile));
+				try {
+					nm.setNetHandler(mc.thePlayer.sendQueue);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+			} catch (Exception e) {
+				System.err.println("error replacing PacketHandler");
 				e.printStackTrace();
 			}
 		}

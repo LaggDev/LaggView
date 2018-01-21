@@ -13,6 +13,7 @@ import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
