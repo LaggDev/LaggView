@@ -48,6 +48,7 @@ public class LaggView {
 	public ApiCache apiCache;
 	public static LaggView instance;
 	private long lastLogin;
+	public GameUpdater gameUpdater;
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
@@ -62,7 +63,7 @@ public class LaggView {
 				apiCache.processFirstRequest();
 			}
         }).start();
-        MinecraftForge.EVENT_BUS.register(new GameUpdater());
+        MinecraftForge.EVENT_BUS.register(gameUpdater = new GameUpdater());
 	}
 	
 	public static LaggView getInstance() {

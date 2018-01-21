@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
 import com.google.common.collect.Ordering;
+import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.apirequests.NameHistoryRequest;
 import com.thelagg.laggview.apirequests.NameToUUIDRequest;
 import com.thelagg.laggview.apirequests.PlayerRequest;
@@ -54,25 +55,8 @@ public class Command extends CommandBase {
 	public void processCommand(ICommandSender sender, final String[] args) throws CommandException {
 		switch(args[0]) {
 		case "test":
-			new Thread() {
-				public void run() {
-					try {
-						MovingObjectPosition mop = Minecraft.getMinecraft().getRenderViewEntity().rayTrace(200, 1.0F);
-						if(mop==null) return;
-						EnumFacing blockHitSide = mop.sideHit;
-						Block blockLookingAt = Minecraft.getMinecraft().theWorld.getBlockState(mop.getBlockPos()).getBlock();
-						if(!blockLookingAt.getLocalizedName().equals("Chest")) return;
-				        float f = (float)(mop.hitVec.xCoord - (double)mop.getBlockPos().getX());
-				        float f1 = (float)(mop.hitVec.yCoord - (double)mop.getBlockPos().getY());
-				        float f2 = (float)(mop.hitVec.zCoord - (double)mop.getBlockPos().getZ());
-						Minecraft.getMinecraft().thePlayer.sendQueue.addToSendQueue(new C08PacketPlayerBlockPlacement(mop.getBlockPos(), blockHitSide.getIndex(), Minecraft.getMinecraft().thePlayer.getHeldItem(), f, f1, f2));
-						Thread.sleep(1000);
-						LogManager.getLogger(LaggView.MODID).log(Level.INFO, Minecraft.getMinecraft().thePlayer.openContainer.getInventory().get(1).getDisplayName());
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}.start();
+			Game g = LaggView.getInstance().gameUpdater.getCurrentGame();
+			Util.print(ChatFormatting.GOLD + g.toString());
 			break;
 		case "record":
 				switch(args[1]) {
