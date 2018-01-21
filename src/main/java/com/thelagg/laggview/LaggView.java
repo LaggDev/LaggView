@@ -11,6 +11,8 @@ import javax.swing.Timer;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
+import com.thelagg.laggview.hud.HUD;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.entity.Entity;
@@ -54,6 +56,7 @@ public class LaggView {
 				apiCache.processFirstRequest();
 			}
         }).start();
+        MinecraftForge.EVENT_BUS.register(new HUD());
 	}
 	
 	public static LaggView getInstance() {
