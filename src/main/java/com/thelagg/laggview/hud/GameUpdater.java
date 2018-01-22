@@ -137,8 +137,9 @@ public class GameUpdater {
 		if(event.isCancelable() || event.type != ElementType.EXPERIENCE) {
 			return;
 		}
-		FontRenderer fr = Minecraft.getMinecraft().fontRendererObj;
-		fr.drawString(ChatFormatting.GOLD + (currentGame==null?"null":currentGame.getServerId()), 0, 0, 0);
+		if(currentGame!=null) {
+			currentGame.drawGraphics();
+		}
 	}
 	
 }

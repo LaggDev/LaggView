@@ -7,6 +7,10 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.mojang.realmsclient.gui.ChatFormatting;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -81,6 +85,11 @@ public class Game {
 		parties = new ArrayList<ArrayList<String>>();
 		MinecraftForge.EVENT_BUS.register(this);
 		lastPartyMessage = new Object[] {0,"test"};
+	}
+	
+	public void drawGraphics() {
+		FontRenderer fr = Minecraft.getMinecraft().fontRendererObj;
+		fr.drawString(ChatFormatting.GOLD + this.getServerId(), 0, 0, 0);
 	}
 	
 	public ArrayList<ArrayList<String>> getParties() {
