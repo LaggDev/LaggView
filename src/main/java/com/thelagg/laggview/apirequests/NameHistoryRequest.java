@@ -3,7 +3,6 @@ package com.thelagg.laggview.apirequests;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -11,7 +10,6 @@ import org.json.simple.parser.ParseException;
 import com.thelagg.laggview.ApiCache;
 import com.thelagg.laggview.ApiRequest;
 import com.thelagg.laggview.URLConnectionReader;
-import com.thelagg.laggview.Util;
 
 public class NameHistoryRequest extends ApiRequest {
 

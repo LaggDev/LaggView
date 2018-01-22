@@ -1,35 +1,19 @@
 package com.thelagg.laggview;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-
 import com.google.common.collect.Ordering;
 import com.mojang.realmsclient.gui.ChatFormatting;
-import com.thelagg.laggview.apirequests.NameHistoryRequest;
-import com.thelagg.laggview.apirequests.NameToUUIDRequest;
-import com.thelagg.laggview.apirequests.PlayerRequest;
-import com.thelagg.laggview.apirequests.SessionRequest;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiIngame;
-import net.minecraft.client.gui.GuiPlayerTabOverlay;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
-import net.minecraft.network.play.client.C0APacketAnimation;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MovingObjectPosition;
 
 public class Command extends CommandBase {
 
@@ -57,6 +41,17 @@ public class Command extends CommandBase {
 		case "test":
 			Game g = LaggView.getInstance().gameUpdater.getCurrentGame();
 			Util.print(ChatFormatting.GOLD + g.toString());
+			break;
+		case "parties":
+			g = LaggView.getInstance().gameUpdater.getCurrentGame();
+			String msg = ChatFormatting.GREEN + "{";
+			int i = 0;
+			for(ArrayList<String> party : g.getParties()) {
+				msg += ChatFormatting.values()[i] + Arrays.toString(party.toArray(new String[party.size()]));
+				i = (i+1)%16;
+			}
+			msg += ChatFormatting.GREEN + "}";
+			Util.print(msg);
 			break;
 		case "record":
 				switch(args[1]) {

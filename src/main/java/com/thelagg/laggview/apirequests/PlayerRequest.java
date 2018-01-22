@@ -2,7 +2,6 @@ package com.thelagg.laggview.apirequests;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.UUID;
 
 import org.json.simple.JSONObject;

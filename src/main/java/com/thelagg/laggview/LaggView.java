@@ -2,8 +2,6 @@ package com.thelagg.laggview;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Field;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,33 +10,17 @@ import javax.swing.Timer;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
-import com.mojang.authlib.GameProfile;
-
 import com.thelagg.laggview.hud.GameUpdater;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.projectile.EntityArrow;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.ArrowLooseEvent;
-import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
-import scala.actors.threadpool.Arrays;
 
 @Mod(modid = LaggView.MODID, version = "1.0", name = "Lagg View", acceptedMinecraftVersions = "[1.8.9]", useMetadata = true)
 public class LaggView {
@@ -79,7 +61,7 @@ public class LaggView {
 				e.printStackTrace();
 			}
 		}
-
+/*
 		if(mc.thePlayer!=null && mc.thePlayer.sendQueue!=null && !(mc.thePlayer.sendQueue instanceof MyPacketHandler)) {
 			try {
 				Field fsendQueue = mc.thePlayer.getClass().getDeclaredField("sendQueue");
@@ -101,7 +83,7 @@ public class LaggView {
 				System.err.println("error replacing PacketHandler");
 				e.printStackTrace();
 			}
-		}
+		}*/
 
 	}
 	

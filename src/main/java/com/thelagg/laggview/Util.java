@@ -1,6 +1,5 @@
 package com.thelagg.laggview;
 
-import java.lang.reflect.Field;
 import java.util.UUID;
 
 import net.minecraft.client.Minecraft;

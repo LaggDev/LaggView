@@ -1,15 +1,15 @@
 package com.thelagg.laggview;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import com.thelagg.laggview.apirequests.GuildRequest;
 import com.thelagg.laggview.apirequests.NameHistoryRequest;
+import com.thelagg.laggview.apirequests.NameToUUIDRequest;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
-
-import net.minecraft.client.Minecraft;
-
-import com.thelagg.laggview.apirequests.NameToUUIDRequest;
 
 public class ApiCache {
 	public Map<UUID,PlayerRequest> playerCache;

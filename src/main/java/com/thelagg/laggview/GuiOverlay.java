@@ -1,19 +1,15 @@
 package com.thelagg.laggview;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 
 import net.minecraft.client.Minecraft;
@@ -23,18 +19,16 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EnumPlayerModelParts;
-import net.minecraft.scoreboard.IScoreObjectiveCriteria;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.GuiIngameForge;
 
-public class GuiOverlay extends GuiIngame {
+public class GuiOverlay extends GuiIngameForge {
 	
     public GuiOverlay(Minecraft mcIn) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
     	super(mcIn);

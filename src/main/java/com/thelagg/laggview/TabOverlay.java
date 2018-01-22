@@ -1,10 +1,9 @@
 package com.thelagg.laggview;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
-
-import org.lwjgl.opengl.GL11;
+import java.util.Map;
 
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
@@ -13,7 +12,6 @@ import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
@@ -44,12 +42,39 @@ public class TabOverlay extends GuiPlayerTabOverlay {
     private long lastTimeOpened;
     /** Weither or not the playerlist is currently being rendered */
     private boolean isBeingRendered;
-
+    private Map<NetworkPlayerInfo,String> suffixes;
+    private Map<NetworkPlayerInfo,String> nameInTab;
+    
     public TabOverlay(Minecraft mcIn, GuiIngame guiIngameIn)
     {
         super(mcIn,guiIngameIn);
         this.mc = mcIn;
         this.guiIngame = guiIngameIn;
+        suffixes = new HashMap<NetworkPlayerInfo,String>();
+        nameInTab = new HashMap<NetworkPlayerInfo,String>();
+    }
+    
+    public void processPlayer(NetworkPlayerInfo player) {
+        String s1 = this.getPlayerName(player);
+        
+        String name = player.getGameProfile().getName(); 
+        PlayerRequest playerRequest = LaggView.getInstance().apiCache.getPlayerResult(name, 1);
+        SessionRequest sessionRequest = LaggView.getInstance().apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
+        if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
+        	LaggView.getInstance().apiCache.update(sessionRequest);
+        }
+        String realName = "";
+        if(playerRequest==null && sessionRequest!=null) {
+        	PlayerRequest realPlayer = sessionRequest.findByNick(name);
+        	if(realPlayer!=null && realPlayer.getName()!=null) {
+        		realName += EnumChatFormatting.LIGHT_PURPLE + " (" + realPlayer.getName() + ")";
+        		playerRequest = realPlayer;
+        	}
+        }
+        s1 += realName;
+        String finalkdr = playerRequest==null?"?":playerRequest.getFinalKDRString();
+        nameInTab.put(player, s1);
+        suffixes.put(player, finalkdr);
     }
 
     /**
@@ -196,26 +221,9 @@ public class TabOverlay extends GuiPlayerTabOverlay {
             {
                 NetworkPlayerInfo networkplayerinfo1 = (NetworkPlayerInfo)list.get(k4);
                 
-                String s1 = this.getPlayerName(networkplayerinfo1);
+                processPlayer(networkplayerinfo1);               
+                String s1 = this.nameInTab.get(networkplayerinfo1);
                 GameProfile gameprofile = networkplayerinfo1.getGameProfile();
-                
-                String name = gameprofile.getName();                	
-                PlayerRequest playerRequest = LaggView.getInstance().apiCache.getPlayerResult(name, 1);
-                SessionRequest sessionRequest = LaggView.getInstance().apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
-                if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
-                	LaggView.getInstance().apiCache.update(sessionRequest);
-                }
-                String realName = "";
-                if(playerRequest==null && sessionRequest!=null) {
-                	PlayerRequest realPlayer = sessionRequest.findByNick(name);
-                	if(realPlayer!=null && realPlayer.getName()!=null) {
-                		realName += EnumChatFormatting.LIGHT_PURPLE + " (" + realPlayer.getName() + ")";
-                		playerRequest = realPlayer;
-                	}
-                }
-                s1 += realName;
-                
-                String finalkdr = playerRequest==null?"?":playerRequest.getFinalKDRString();
                 
                 if (flag)
                 {
@@ -256,18 +264,32 @@ public class TabOverlay extends GuiPlayerTabOverlay {
                         this.drawScoreboardValues(scoreObjectiveIn, k2, gameprofile.getName(), k5, l5, networkplayerinfo1);
                     }
                 }
-                
-                //this.drawPing(i1, j2 - (flag ? 9 : 0), k2, networkplayerinfo1);
-                int stringSize = mc.fontRendererObj.getStringWidth(finalkdr);
-                double scale = 8.0/(double)(stringSize); //scale = 8/stringSize, stringSize = 8/scale
-                GlStateManager.pushMatrix();
-                GlStateManager.scale(scale, scale, 1.0);
-                int x = j2 - (flag ? 9 : 0) + i1 - 1 - stringSize, y = k2;
-                x = (int)(((double)(x)) * 1.0/scale) + 8;
-                y = (int)(((double)(y)) * 1.0/scale) + 4;
-                this.mc.fontRendererObj.drawStringWithShadow(EnumChatFormatting.GOLD + finalkdr, x, y, -1);
-                GlStateManager.scale(8.0/scale, 8.0/scale, 1.0);
-                GlStateManager.popMatrix();
+
+                String suffix = suffixes.get(networkplayerinfo1);
+                if(suffix.equals("//ping//")) {
+                	this.drawPing(i1, j2 - (flag ? 9 : 0), k2, networkplayerinfo1);
+                } else {
+	                double stringWidth = mc.fontRendererObj.getStringWidth(suffix);
+	                double stringHeight = mc.fontRendererObj.FONT_HEIGHT;
+	                double widthRatio = stringWidth/10.0;
+	                double heightRatio = stringHeight/8.0;
+	                double scale; //FRACTION
+	                if(widthRatio>heightRatio) {
+	                	scale = 1.0/widthRatio;
+	                } else {
+	                	scale = 1.0/heightRatio;
+	                }
+	                GlStateManager.pushMatrix();
+	                GlStateManager.scale(scale, scale, 1.0);
+	                double x = j2 - (flag ? 9 : 0) + i1 - 11, y = k2 + 2;
+	                if(heightRatio>widthRatio) {
+	                	x += 10.0-stringWidth*scale;
+	                }
+	                x = x/scale;
+	                y = y/scale;
+	                this.mc.fontRendererObj.drawStringWithShadow(EnumChatFormatting.GOLD + suffix, (int)x, (int)y, -1);
+	                GlStateManager.popMatrix();
+                }
             }
         }
 
