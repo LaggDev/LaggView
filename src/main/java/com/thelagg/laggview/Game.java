@@ -8,6 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
+import com.thelagg.laggview.hud.Hud.HudText;
+import com.thelagg.laggview.hud.Hud.Priority;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -68,28 +70,30 @@ public class Game {
 
 	private ArrayList<String> playerNames;
 	private ArrayList<UUID> playerUUIDs;
+	private int coins;
 	private ArrayList<ArrayList<String>> parties;
 	private Map<Long,String> chatMessages;
 	private GameType gameType;
 	private String serverId;
 	private long timeJoined;
 	private Object[] lastPartyMessage;
+	protected Minecraft mc;
+	protected ArrayList<HudText> hudText;
 	
-	public Game(GameType type, String serverId) {
+	public Game(GameType type, String serverId, Minecraft mc) {
 		this.gameType = type;
 		this.serverId = serverId;
+		this.mc = mc;
 		timeJoined = System.currentTimeMillis();
 		playerUUIDs = new ArrayList<UUID>();
 		playerNames = new ArrayList<String>();
 		chatMessages = new HashMap<Long,String>();
 		parties = new ArrayList<ArrayList<String>>();
+		coins = 0;
 		MinecraftForge.EVENT_BUS.register(this);
 		lastPartyMessage = new Object[] {0,"test"};
-	}
-	
-	public void drawGraphics() {
-		FontRenderer fr = Minecraft.getMinecraft().fontRendererObj;
-		fr.drawString(ChatFormatting.GOLD + this.getServerId(), 0, 0, 0);
+		hudText = new ArrayList<HudText>();
+		updateHudText(new HudText(Priority.COINS,ChatFormatting.GOLD + "Coins: " + coins));
 	}
 	
 	public ArrayList<ArrayList<String>> getParties() {
@@ -122,6 +126,7 @@ public class Game {
 		long time = System.currentTimeMillis();
 		if(event.type!=2) {
 			chatMessages.put(time, event.message.getFormattedText());
+			countCoins(event.message.getFormattedText());
 			processParty(time,event.message.getFormattedText());
 		}
 	}
@@ -158,6 +163,34 @@ public class Game {
 		if(bool) {
 			lastPartyMessage[0] = time;
 			lastPartyMessage[1] = m.group(1);
+		}
+	}
+	
+	
+	protected void updateHudText(HudText hudText) {
+		for(int i = 0; i<this.hudText.size(); i++) {
+			HudText entry = this.hudText.get(i);
+			if(hudText.samePriority(entry)) {
+				System.out.println("updating hud");
+				this.hudText.remove(entry);
+			}
+		}
+		this.hudText.add(hudText);
+	}
+	
+	public ArrayList<HudText> getHudText() {
+		return this.hudText;
+	}
+	
+	public void countCoins(String msg) {
+		Matcher m = Pattern.compile("§r§6\\+(\\d+) coins").matcher(msg);
+		if(m.find()) {
+			try {
+				coins += Integer.parseInt(m.group(1));
+				updateHudText(new HudText(Priority.COINS,ChatFormatting.GOLD + "Coins: " + coins));
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

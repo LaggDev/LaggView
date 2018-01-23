@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
 import com.thelagg.laggview.hud.GameUpdater;
+import com.thelagg.laggview.hud.Hud;
 
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -31,6 +32,7 @@ public class LaggView {
 	public static LaggView instance;
 	private long lastLogin;
 	public GameUpdater gameUpdater;
+	public Hud hud;
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
@@ -45,7 +47,8 @@ public class LaggView {
 				apiCache.processFirstRequest();
 			}
         }).start();
-        MinecraftForge.EVENT_BUS.register(gameUpdater = new GameUpdater());
+        MinecraftForge.EVENT_BUS.register(gameUpdater = new GameUpdater(mc));
+        this.hud = new Hud(this,mc);
 	}
 	
 	public static LaggView getInstance() {

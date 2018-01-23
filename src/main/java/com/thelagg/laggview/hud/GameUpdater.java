@@ -6,11 +6,11 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.Game;
+import com.thelagg.laggview.Game.GameType;
+import com.thelagg.laggview.games.MegaWallsGame;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -26,9 +26,11 @@ public class GameUpdater {
 	boolean waitingForServerId;
 	boolean gettingGame;
 	String serverId;
+	private Minecraft mc;
 	
-	public GameUpdater() {
+	public GameUpdater(Minecraft mc) {
 		this.allGames = new ArrayList<Game>();
+		this.mc = mc;
 	}
 	
 	public Game getCurrentGame() {
@@ -40,7 +42,7 @@ public class GameUpdater {
 			return false;
 		}
 		String newStr = so.getDisplayName().replaceAll("\u00A7.{1}", "").trim();
-		return !newStr.equals("housing") && !newStr.equals("battleLobby") && !newStr.equals("PreScoreboard");
+		return !newStr.equals("housing") && !newStr.equals("battleLobby") && !newStr.equals("PreScoreboard") && !newStr.equals("MegaScoreboard");
 	}
 	
 	@SubscribeEvent
@@ -91,7 +93,7 @@ public class GameUpdater {
 							} else {
 								Game alreadyExisted = findGame(type,id);
 								if(alreadyExisted==null) {
-									currentGame = new Game(type,id);
+									currentGame = createGame(type,id);
 									allGames.add(currentGame);
 								} else {
 									alreadyExisted.enter();
@@ -109,6 +111,15 @@ public class GameUpdater {
 				gettingGame = false;
 			}
 		}.start();
+	}
+	
+	public Game createGame(GameType type,String id) {
+		switch(type) {
+		case MEGA_WALLS:
+			return new MegaWallsGame(id,mc);
+		default:
+			return new Game(type,id,mc);
+		}
 	}
 	
 	public Game findGame(Game.GameType type,String id) {
@@ -129,16 +140,6 @@ public class GameUpdater {
 				event.setCanceled(true);
 				waitingForServerId = false;
 			}
-		}
-	}
-	
-	@SubscribeEvent
-	public void onRender(RenderGameOverlayEvent event) {
-		if(event.isCancelable() || event.type != ElementType.EXPERIENCE) {
-			return;
-		}
-		if(currentGame!=null) {
-			currentGame.drawGraphics();
 		}
 	}
 	
