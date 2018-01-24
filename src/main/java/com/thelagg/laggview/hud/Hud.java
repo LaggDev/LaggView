@@ -3,7 +3,6 @@ package com.thelagg.laggview.hud;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 
 import com.thelagg.laggview.Game;
 import com.thelagg.laggview.LaggView;

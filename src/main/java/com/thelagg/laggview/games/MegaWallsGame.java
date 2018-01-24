@@ -7,11 +7,16 @@ import java.util.regex.Pattern;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.Game;
+import com.thelagg.laggview.LaggView;
+import com.thelagg.laggview.TabOverlay;
+import com.thelagg.laggview.apirequests.PlayerRequest;
+import com.thelagg.laggview.apirequests.SessionRequest;
 import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 
 public class MegaWallsGame extends Game {
@@ -19,8 +24,8 @@ public class MegaWallsGame extends Game {
 	Map<String,Integer> playerFinalKills = new HashMap<String,Integer>();
 	private int kills, assists, finalKills, finalAssists;
 	
-	public MegaWallsGame(String serverId, Minecraft mc) {
-		super(GameType.MEGA_WALLS, serverId,mc);
+	public MegaWallsGame(String serverId, Minecraft mc, LaggView laggView) {
+		super(GameType.MEGA_WALLS, serverId,mc, laggView);
 		kills = 0;
 		assists = 0;
 		finalKills = 0;
@@ -71,5 +76,30 @@ public class MegaWallsGame extends Game {
 		} else {
 			playerFinalKills.put(player, 1);
 		}
+	}
+	
+	@Override
+	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
+        String s1 = tabOverlay.getPlayerName(player);
+        
+        String name = player.getGameProfile().getName(); 
+        PlayerRequest playerRequest = laggView.apiCache.getPlayerResult(name, 1);
+        SessionRequest sessionRequest = laggView.apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
+        if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
+        	laggView.apiCache.update(sessionRequest);
+        }
+        String realName = "";
+        if(playerRequest==null && sessionRequest!=null) {
+        	PlayerRequest realPlayer = sessionRequest.findByNick(name);
+        	if(realPlayer!=null && realPlayer.getName()!=null) {
+        		realName += EnumChatFormatting.LIGHT_PURPLE + " (" + realPlayer.getName() + ")";
+        		playerRequest = realPlayer;
+        	}
+        }
+        s1 += realName;
+        String finalkdr = playerRequest==null?"?":playerRequest.getFinalKDRString();
+        tabOverlay.getNamesInTab().put(player, s1);
+        tabOverlay.getSuffixes().put(player, finalkdr);
+		return true;
 	}
 }

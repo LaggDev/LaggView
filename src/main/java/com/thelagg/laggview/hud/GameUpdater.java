@@ -8,13 +8,12 @@ import java.util.regex.Pattern;
 
 import com.thelagg.laggview.Game;
 import com.thelagg.laggview.Game.GameType;
+import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.games.MegaWallsGame;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -27,10 +26,12 @@ public class GameUpdater {
 	boolean gettingGame;
 	String serverId;
 	private Minecraft mc;
+	private LaggView laggView;
 	
-	public GameUpdater(Minecraft mc) {
+	public GameUpdater(Minecraft mc, LaggView laggView) {
 		this.allGames = new ArrayList<Game>();
 		this.mc = mc;
+		this.laggView = laggView;
 	}
 	
 	public Game getCurrentGame() {
@@ -90,6 +91,8 @@ public class GameUpdater {
 							if(time-start2>=timeOut) {
 								waitingForServerId = false;
 								currentGame = null;
+							} else if (id.toLowerCase().contains("lobby") || id.equals("limbo")) {
+								
 							} else {
 								Game alreadyExisted = findGame(type,id);
 								if(alreadyExisted==null) {
@@ -116,9 +119,9 @@ public class GameUpdater {
 	public Game createGame(GameType type,String id) {
 		switch(type) {
 		case MEGA_WALLS:
-			return new MegaWallsGame(id,mc);
+			return new MegaWallsGame(id,mc,laggView);
 		default:
-			return new Game(type,id,mc);
+			return new Game(type,id,mc,laggView);
 		}
 	}
 	
@@ -134,7 +137,13 @@ public class GameUpdater {
 	@SubscribeEvent
 	public void onChat(ClientChatReceivedEvent event) {
 		Matcher m = Pattern.compile("§bYou are currently connected to server §r§6(.*)§r").matcher(event.message.getFormattedText());
-		if(m.find()) {
+		if(event.message.getFormattedText().equals("§bYou are currently in limbo§r")) {
+			serverId = "limbo";
+			if(waitingForServerId) {
+				event.setCanceled(true);
+				waitingForServerId = false;
+			}
+		} else if(m.find()) {
 			serverId = m.group(1);
 			if(waitingForServerId) {
 				event.setCanceled(true);

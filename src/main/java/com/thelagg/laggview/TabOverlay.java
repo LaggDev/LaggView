@@ -8,8 +8,6 @@ import java.util.Map;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.mojang.authlib.GameProfile;
-import com.thelagg.laggview.apirequests.PlayerRequest;
-import com.thelagg.laggview.apirequests.SessionRequest;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -44,39 +42,38 @@ public class TabOverlay extends GuiPlayerTabOverlay {
     private boolean isBeingRendered;
     private Map<NetworkPlayerInfo,String> suffixes;
     private Map<NetworkPlayerInfo,String> nameInTab;
+    private LaggView laggView;
     
-    public TabOverlay(Minecraft mcIn, GuiIngame guiIngameIn)
+    public TabOverlay(Minecraft mcIn, GuiIngame guiIngameIn, LaggView laggView)
     {
         super(mcIn,guiIngameIn);
         this.mc = mcIn;
         this.guiIngame = guiIngameIn;
         suffixes = new HashMap<NetworkPlayerInfo,String>();
         nameInTab = new HashMap<NetworkPlayerInfo,String>();
+        this.laggView = laggView;
     }
     
     public void processPlayer(NetworkPlayerInfo player) {
+    	Game currentGame = laggView.gameUpdater.getCurrentGame();
+    	if(currentGame!=null) {
+    		boolean processed = currentGame.processPlayerTab(player, this);
+    		if(processed) return;
+    	}
+    	
         String s1 = this.getPlayerName(player);
-        
-        String name = player.getGameProfile().getName(); 
-        PlayerRequest playerRequest = LaggView.getInstance().apiCache.getPlayerResult(name, 1);
-        SessionRequest sessionRequest = LaggView.getInstance().apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
-        if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
-        	LaggView.getInstance().apiCache.update(sessionRequest);
-        }
-        String realName = "";
-        if(playerRequest==null && sessionRequest!=null) {
-        	PlayerRequest realPlayer = sessionRequest.findByNick(name);
-        	if(realPlayer!=null && realPlayer.getName()!=null) {
-        		realName += EnumChatFormatting.LIGHT_PURPLE + " (" + realPlayer.getName() + ")";
-        		playerRequest = realPlayer;
-        	}
-        }
-        s1 += realName;
-        String finalkdr = playerRequest==null?"?":playerRequest.getFinalKDRString();
         nameInTab.put(player, s1);
-        suffixes.put(player, finalkdr);
+        suffixes.put(player, "%ping%");
     }
 
+    public Map<NetworkPlayerInfo,String> getNamesInTab() {
+    	return this.nameInTab;
+    }
+
+    public Map<NetworkPlayerInfo,String> getSuffixes() {
+    	return this.suffixes;
+    }
+    
     /**
      * Returns the name that should be renderd for the player supplied
      */
@@ -266,7 +263,7 @@ public class TabOverlay extends GuiPlayerTabOverlay {
                 }
 
                 String suffix = suffixes.get(networkplayerinfo1);
-                if(suffix.equals("//ping//")) {
+                if(suffix.equals("%ping%")) {
                 	this.drawPing(i1, j2 - (flag ? 9 : 0), k2, networkplayerinfo1);
                 } else {
 	                double stringWidth = mc.fontRendererObj.getStringWidth(suffix);

@@ -1,0 +1,1 @@
+{"toggleRecordingOnHotkey":"CTRL + J","toggleRecordingOffHotkey":"CTRL + I"}

@@ -19,10 +19,10 @@ public class Command extends CommandBase {
 
 	public static boolean toggleSpeed = false;
 	public static ArrayList<Double> times = new ArrayList<Double>();
-	private LaggView main;
+	private LaggView laggView;
 	
 	public Command(LaggView m) {
-		this.main = m;
+		this.laggView = m;
 	}
 	
 	@Override
@@ -38,6 +38,9 @@ public class Command extends CommandBase {
 	@Override
 	public void processCommand(ICommandSender sender, final String[] args) throws CommandException {
 		switch(args[0]) {
+		case "hotkeys":
+			new HotkeyGui(laggView.hackerMonitor.getStartRecordingHotkey(),laggView.hackerMonitor.getStopRecordingHotkey(),laggView);
+			break;
 		case "test":
 			Game g = LaggView.getInstance().gameUpdater.getCurrentGame();
 			Util.print(ChatFormatting.GOLD + g.toString());
@@ -55,26 +58,31 @@ public class Command extends CommandBase {
 			break;
 		case "record":
 				switch(args[1]) {
-				case "add":
-					String hackerName = args[2].toLowerCase();
-					if(!main.hackerMonitor.hackerList.contains(hackerName)) {
-						main.hackerMonitor.hackerList.add(hackerName);
-						Util.print(EnumChatFormatting.DARK_PURPLE + "Added " + EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_PURPLE + " to hacker list");
-					} else {
-						Util.print(EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_RED + " is already on your hacker list!");
-					}
+				case "list":
+					laggView.hackerMonitor.printList();
 					break;
 				case "remove":
-					hackerName = args[2].toLowerCase();
-					if(main.hackerMonitor.hackerList.contains(hackerName)) {
-						main.hackerMonitor.hackerList.remove(hackerName);
+					String hackerName = args[2].toLowerCase();
+					if(laggView.hackerMonitor.hackerList.contains(hackerName)) {
+						laggView.hackerMonitor.hackerList.remove(hackerName);
 						Util.print(EnumChatFormatting.DARK_PURPLE + "Removed " + EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_PURPLE + " from hacker list");
 					} else {
 						Util.print(EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_RED + " is not on your hacker list!");
 					}	
 				break;
 				default:
-					Util.print("Couldn't recognize that command, sorry :/");
+					if(args.length==2) {
+						hackerName = args[1].toLowerCase();
+						if(!laggView.hackerMonitor.hackerList.contains(hackerName)) {
+							laggView.hackerMonitor.hackerList.add(hackerName);
+							Util.print(EnumChatFormatting.DARK_PURPLE + "Added " + EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_PURPLE + " to hacker list");
+						} else {
+							laggView.hackerMonitor.hackerList.remove(hackerName);
+							Util.print(EnumChatFormatting.DARK_PURPLE + "Removed " + EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_PURPLE + " from hacker list");
+						}
+					} else {
+						Util.print("Couldn't recognize that command, sorry :/");
+					}
 					break;
 				}
 			break;

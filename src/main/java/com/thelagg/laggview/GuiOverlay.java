@@ -30,7 +30,9 @@ import net.minecraftforge.client.GuiIngameForge;
 
 public class GuiOverlay extends GuiIngameForge {
 	
-    public GuiOverlay(Minecraft mcIn) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+	LaggView laggView;
+	
+    public GuiOverlay(Minecraft mcIn, LaggView laggView) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
     	super(mcIn);
     	Field f;
     	try {
@@ -39,7 +41,8 @@ public class GuiOverlay extends GuiIngameForge {
     		f = GuiIngame.class.getDeclaredField("field_175196_v");
     	}
     	f.setAccessible(true);
-    	f.set(this, new TabOverlay(mcIn,this));
+    	f.set(this, new TabOverlay(mcIn,this,laggView));
+    	this.laggView = laggView;
 	}
     
 	/**

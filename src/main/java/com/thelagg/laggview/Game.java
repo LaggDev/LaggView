@@ -12,7 +12,7 @@ import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -79,8 +79,10 @@ public class Game {
 	private Object[] lastPartyMessage;
 	protected Minecraft mc;
 	protected ArrayList<HudText> hudText;
+	protected LaggView laggView;
 	
-	public Game(GameType type, String serverId, Minecraft mc) {
+	public Game(GameType type, String serverId, Minecraft mc, LaggView laggView) {
+		this.laggView = laggView;
 		this.gameType = type;
 		this.serverId = serverId;
 		this.mc = mc;
@@ -197,6 +199,10 @@ public class Game {
 	public static class Message {
 		public long time;
 		public String msg;
+	}
+
+	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
+		return false;
 	}
 	
 }

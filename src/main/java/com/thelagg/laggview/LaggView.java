@@ -9,9 +9,11 @@ import javax.swing.Timer;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.thelagg.laggview.hud.GameUpdater;
 import com.thelagg.laggview.hud.Hud;
+import com.thelagg.laggview.settings.Settings;
 
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -33,21 +35,25 @@ public class LaggView {
 	private long lastLogin;
 	public GameUpdater gameUpdater;
 	public Hud hud;
+	public Logger logger;
+	public Settings settings;
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
+        this.logger = LogManager.getLogger("laggview");
 		instance = this;
+		settings = Settings.loadFromFile();
 		mc = Minecraft.getMinecraft();
 		apiCache = new ApiCache();
 		MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(hackerMonitor = new HackerMonitor(mc));
+        MinecraftForge.EVENT_BUS.register(hackerMonitor = new HackerMonitor(mc,this));
         ClientCommandHandler.instance.registerCommand(new Command(this));
         new Timer(10,new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				apiCache.processFirstRequest();
 			}
         }).start();
-        MinecraftForge.EVENT_BUS.register(gameUpdater = new GameUpdater(mc));
+        MinecraftForge.EVENT_BUS.register(gameUpdater = new GameUpdater(mc,this));
         this.hud = new Hud(this,mc);
 	}
 	
@@ -59,7 +65,7 @@ public class LaggView {
 	public void onTick(ClientTickEvent event) {
 		if(!(mc.ingameGUI instanceof GuiOverlay)) {
 			try {
-				mc.ingameGUI = new GuiOverlay(mc);
+				mc.ingameGUI = new GuiOverlay(mc,this);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

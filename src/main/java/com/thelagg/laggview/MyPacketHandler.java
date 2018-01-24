@@ -24,6 +24,7 @@ public class MyPacketHandler extends NetHandlerPlayClient {
 		mcIn.playerController = new PlayerControllerMP(mcIn, this);
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void addToSendQueue(Packet p) {
 		try {
