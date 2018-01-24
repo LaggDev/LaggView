@@ -16,6 +16,7 @@ import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
 public class Game {
 	
@@ -121,6 +122,11 @@ public class Game {
 	
 	public void enter() {
 		MinecraftForge.EVENT_BUS.register(this);
+	}
+	
+	@SubscribeEvent
+	public void onTick(ClientTickEvent event) {
+		
 	}
 	
 	@SubscribeEvent

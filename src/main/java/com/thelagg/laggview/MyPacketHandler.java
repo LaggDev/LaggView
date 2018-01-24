@@ -76,5 +76,4 @@ public class MyPacketHandler extends NetHandlerPlayClient {
 			e.printStackTrace();
 		}
 	}
-	
 }

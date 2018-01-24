@@ -7,8 +7,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -20,10 +23,12 @@ import net.minecraft.client.Minecraft;
 public class Settings {
 	private String toggleRecordingOnHotkey;
 	private String toggleRecordingOffHotkey;
+	private List<String> hackersToRecord;
 	
-	public Settings(String toggleRecordingOnHotkey, String toggleRecordingOffHotkey) {
+	public Settings(String toggleRecordingOnHotkey, String toggleRecordingOffHotkey, List<String> hackersToRecord) {
 		this.toggleRecordingOnHotkey = toggleRecordingOnHotkey;
 		this.toggleRecordingOffHotkey = toggleRecordingOffHotkey;
+		this.hackersToRecord = hackersToRecord;
 	}
 	
 	public boolean isValid() {
@@ -68,7 +73,14 @@ public class Settings {
 		JSONObject json = (JSONObject) parser.parse(str);
 		String toggleRecordingOnHotkey = (String) json.get("toggleRecordingOnHotkey");
 		String toggleRecordingOffHotkey = (String) json.get("toggleRecordingOffHotkey");
-		Settings settings = new Settings(toggleRecordingOnHotkey,toggleRecordingOffHotkey); 
+		JSONArray hackersToRecord = (JSONArray)json.get("hackersToRecord");
+		Settings settings;
+		try {
+			settings = new Settings(toggleRecordingOnHotkey,toggleRecordingOffHotkey,(List<String>)hackersToRecord);
+		} catch (ClassCastException e) {
+			e.printStackTrace();
+			return getDefaultSettings();
+		}
 		if(settings.isValid()) {
 			return settings;
 		} else {
@@ -102,7 +114,7 @@ public class Settings {
 	}
 	
 	public static Settings getDefaultSettings() {
-		Settings s = new Settings("CTRL + J","CTRL + I");
+		Settings s = new Settings("CTRL + J","CTRL + I",new ArrayList<String>());
 		try {
 			s.saveToFile();
 		} catch (IOException e) {
