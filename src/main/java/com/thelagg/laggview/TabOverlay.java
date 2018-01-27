@@ -43,6 +43,7 @@ public class TabOverlay extends GuiPlayerTabOverlay {
     private Map<NetworkPlayerInfo,String> suffixes;
     private Map<NetworkPlayerInfo,String> nameInTab;
     private LaggView laggView;
+    public NetworkPlayerInfo[] currentlyDisplayedPlayers = {};
     
     public TabOverlay(Minecraft mcIn, GuiIngame guiIngameIn, LaggView laggView)
     {
@@ -107,6 +108,13 @@ public class TabOverlay extends GuiPlayerTabOverlay {
         this.isBeingRendered = willBeRendered;
     }
 
+    public NetworkPlayerInfo[] getCurrentlyDisplayedPlayers() {
+    	NetHandlerPlayClient nethandlerplayclient = this.mc.thePlayer.sendQueue;
+    	List<NetworkPlayerInfo> list = field_175252_a.<NetworkPlayerInfo>sortedCopy(nethandlerplayclient.getPlayerInfoMap());
+        this.currentlyDisplayedPlayers = list.toArray(new NetworkPlayerInfo[list.size()]);
+        return this.currentlyDisplayedPlayers;
+    }
+    
     /**
      * Renders the playerlist, its background, headers and footers.
      */
@@ -131,6 +139,7 @@ public class TabOverlay extends GuiPlayerTabOverlay {
         }
 
         list = list.subList(0, Math.min(list.size(), 80));
+        this.currentlyDisplayedPlayers = list.toArray(new NetworkPlayerInfo[list.size()]);
         int l3 = list.size();
         int i4 = l3;
         int j4;

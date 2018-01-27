@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.orangemarshall.hudproperty.HudPropertyApi;
 import com.thelagg.laggview.hud.GameUpdater;
 import com.thelagg.laggview.hud.Hud;
 import com.thelagg.laggview.settings.Settings;
@@ -37,10 +38,12 @@ public class LaggView {
 	public Hud hud;
 	public Logger logger;
 	public Settings settings;
+	public HudPropertyApi hudProperty;
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
         this.logger = LogManager.getLogger("laggview");
+    	hudProperty = HudPropertyApi.newInstance();
 		instance = this;
 		settings = Settings.loadFromFile();
 		mc = Minecraft.getMinecraft();
@@ -100,7 +103,7 @@ public class LaggView {
 	public void onChat(ClientChatReceivedEvent event) {
 		if(event.type==0) {
 			LogManager.getLogger(MODID).log(Level.INFO, event.message.getFormattedText());
-			Matcher m = Pattern.compile("§r§.{1}(.*?)§r§e has joined \\(§r§b\\d+§r§e/§r§b\\d+§r§e\\)!§r").matcher(event.message.getFormattedText());
+			Matcher m = Pattern.compile("\u00A7r\u00A7.{1}(.*?)\u00A7r\u00A7e has joined \\(\u00A7r\u00A7b\\d+\u00A7r\u00A7e/\u00A7r\u00A7b\\d+\u00A7r\u00A7e\\)!\u00A7r").matcher(event.message.getFormattedText());
 			if(m.find()) {
 				long time = System.currentTimeMillis();
 				long difference = time - lastLogin;

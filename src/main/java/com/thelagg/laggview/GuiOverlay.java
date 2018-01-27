@@ -107,15 +107,6 @@ public class GuiOverlay extends GuiIngameForge {
     	return null;
     }
     
-    
-    /*
-[14:49:58] [Client thread/INFO]: [CHAT] §f
-[14:49:58] [Client thread/INFO]: [CHAT] §aVoxilty
-[14:49:58] [Client thread/INFO]: [CHAT] §abebke
-[14:49:58] [Client thread/INFO]: [CHAT] Teammates:
-[14:49:58] [Client thread/INFO]: [CHAT] §1
-     */
-    
     @Override
     protected void renderScoreboard(ScoreObjective p_180475_1_, ScaledResolution p_180475_2_)
     {

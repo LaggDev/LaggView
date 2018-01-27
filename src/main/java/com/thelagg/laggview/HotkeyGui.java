@@ -67,6 +67,13 @@ public class HotkeyGui extends JPanel implements KeyListener {
 	}
 	
 	public void paintComponent(Graphics g1) {
+		while(button1==null && button2==null) {
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 		Graphics2D g = (Graphics2D)g1;
 		g.setColor(new Color(255,51,51));
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
@@ -113,7 +120,8 @@ public class HotkeyGui extends JPanel implements KeyListener {
 	public void updateKeyCombos() {
 		laggView.hackerMonitor.setStartRecordingHotkey(toggleOnHotkey);
 		laggView.hackerMonitor.setStopRecordingHotkey(toggleOffHotkey);
-		
+		laggView.settings.setToggleRecordingOnHotkey(toggleOnHotkey);
+		laggView.settings.setToggleRecordingOffHotkey(toggleOffHotkey);
 	}
 
 	@Override

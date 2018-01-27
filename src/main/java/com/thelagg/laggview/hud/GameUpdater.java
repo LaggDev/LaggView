@@ -1,10 +1,10 @@
 package com.thelagg.laggview.hud;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.Level;
 
 import com.thelagg.laggview.Game;
 import com.thelagg.laggview.Game.GameType;
@@ -48,9 +48,11 @@ public class GameUpdater {
 	
 	@SubscribeEvent
 	public void onWorldLoad(WorldEvent.Load event) {
-		if(System.currentTimeMillis()-lastWorldLoad<750 || !Minecraft.getMinecraft().getCurrentServerData().serverIP.contains("hypixel.net") || this.gettingGame) {
+		laggView.logger.log(Level.INFO, Minecraft.getMinecraft().getCurrentServerData().serverIP);
+		if(System.currentTimeMillis()-lastWorldLoad<750 || !Minecraft.getMinecraft().getCurrentServerData().serverIP.toLowerCase().contains("hypixel.net") || this.gettingGame) {
 			return;
 		}
+		laggView.logger.log(Level.INFO, "loading world");
 		if(currentGame!=null) {
 			currentGame.exit();
 		}
@@ -68,13 +70,13 @@ public class GameUpdater {
 					}
 				}
 				if(!isValid(event.world.getScoreboard().getObjectiveInDisplaySlot(1))) {
-					Logger.getLogger("laggview").log(Level.INFO,"GAME: null " + System.currentTimeMillis());
+					laggView.logger.log(Level.INFO,"GAME: null " + System.currentTimeMillis());
 				} else {
 					String str = event.world.getScoreboard().getObjectiveInDisplaySlot(1).getDisplayName();
-					Logger.getLogger("laggview").log(Level.INFO,"GAME: " + str + " " + System.currentTimeMillis());
+					laggView.logger.log(Level.INFO,"GAME: " + str + " " + System.currentTimeMillis());
 					for(Game.GameType type : Game.GameType.values()) {
 						if(type.getNameOnScoreboard().equals(str.replaceAll("\u00A7.{1}", "").trim())) {
-							Logger.getLogger("laggview").log(Level.INFO, "MATCHED WITH: " + type.name());
+							laggView.logger.log(Level.INFO, "MATCHED WITH: " + type.name());
 							long timeOut = 5000;
 							long start2 = System.currentTimeMillis();
 							waitingForServerId = true;
@@ -136,8 +138,8 @@ public class GameUpdater {
 	
 	@SubscribeEvent
 	public void onChat(ClientChatReceivedEvent event) {
-		Matcher m = Pattern.compile("§bYou are currently connected to server §r§6(.*)§r").matcher(event.message.getFormattedText());
-		if(event.message.getFormattedText().equals("§bYou are currently in limbo§r")) {
+		Matcher m = Pattern.compile("\u00A7bYou are currently connected to server \u00A7r\u00A76(.*)\u00A7r").matcher(event.message.getFormattedText());
+		if(event.message.getFormattedText().equals("\u00A7bYou are currently in limbo\u00A7r")) {
 			serverId = "limbo";
 			if(waitingForServerId) {
 				event.setCanceled(true);

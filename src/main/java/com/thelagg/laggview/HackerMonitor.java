@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
+import org.lwjgl.input.Mouse;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
@@ -19,19 +20,33 @@ import net.minecraft.event.ClickEvent.Action;
 import net.minecraft.event.HoverEvent;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
 public class HackerMonitor {
-	List<String> hackerList;
+	private List<String> hackerList;
 	Minecraft mc;
 	ArrayList<EntityPlayer> hackersWithinRadius;
 	boolean currentlyRecording;
 	public static float radius = 20f;
 	private String startRecordingHotkey;
 	private String stopRecordingHotkey;
+	private boolean toggleRecording;
 	private LaggView laggView;
+	
+	public void toggleRecording() {
+		this.toggleRecording = !toggleRecording;
+		if(!this.toggleRecording) {
+			Mouse.setGrabbed(true);
+			this.stopRecording();
+			Util.print(ChatFormatting.DARK_PURPLE + "Auto-recording toggled " + ChatFormatting.RED + "OFF");
+		} else {
+			Util.print(ChatFormatting.DARK_PURPLE + "Auto-recording toggled " + ChatFormatting.GREEN + "ON");
+		}
+		laggView.settings.setToggleRecording(toggleRecording);
+	}
 	
 	public String getStartRecordingHotkey() {
 		return this.startRecordingHotkey;
@@ -49,19 +64,46 @@ public class HackerMonitor {
 		this.stopRecordingHotkey = s;
 	}
 	
+	public void remove(String player) {
+		if(hackerList.contains(player.toLowerCase())) {
+			hackerList.remove(player.toLowerCase());
+			Util.print(EnumChatFormatting.DARK_PURPLE + "Removed " + EnumChatFormatting.GOLD + player + EnumChatFormatting.DARK_PURPLE + " from hacker list");
+			laggView.settings.setHackerList(hackerList);
+		} else {
+			Util.print(ChatFormatting.GOLD + player + EnumChatFormatting.DARK_RED + " not on your hacker list");
+		}
+	}
+	
+	public void add(String player) {
+		if(!hackerList.contains(player.toLowerCase())) {
+			hackerList.add(player.toLowerCase());
+			Util.print(EnumChatFormatting.DARK_PURPLE + "Added " + EnumChatFormatting.GOLD + player + EnumChatFormatting.DARK_PURPLE + " to hacker list");
+			laggView.settings.setHackerList(hackerList);
+		}
+	}
+	
+	public void addOrRemove(String player) {
+		if(hackerList.contains(player.toLowerCase())) {
+			remove(player);
+		} else {
+			add(player);
+		}
+	}
+	
 	public HackerMonitor(Minecraft mcIn, LaggView laggView) {
 		this.mc = mcIn;
-		this.hackerList = new ArrayList<String>();
 		this.hackersWithinRadius = new ArrayList<EntityPlayer>();
 		currentlyRecording = false;
 		this.laggView = laggView;
 		this.startRecordingHotkey = laggView.settings.getToggleRecordingOnHotkey();
 		this.stopRecordingHotkey = laggView.settings.getToggleRecordingOffHotkey();
+		this.hackerList = laggView.settings.getHackerList();
+		this.toggleRecording = laggView.settings.getToggleRecording();
 	}
 	
 	@SubscribeEvent
 	public void tick(ClientTickEvent event) {
-		if(mc.theWorld!=null) {
+		if(mc.theWorld!=null && toggleRecording) {
 			List<Entity> entities = mc.theWorld.getLoadedEntityList();
 			EntityPlayerSP me = mc.thePlayer;
 			for(Entity e : entities) {
@@ -95,6 +137,9 @@ public class HackerMonitor {
 				if(currentlyRecording) {
 					return;
 				}
+				if(!Mouse.isGrabbed()) {
+					return;
+				}
 				currentlyRecording = true;
 				try {
 					enterKeyCode(startRecordingHotkey);
@@ -109,26 +154,30 @@ public class HackerMonitor {
 	private static void enterKeyCode(String sequence) throws AWTException, InterruptedException {
 		char c = sequence.charAt(sequence.length()-1);
 		Robot r = new Robot();
-		if(sequence.contains("CTRL")) {
+		boolean holdingCtrl = Mouse.isButtonDown(KeyEvent.VK_CONTROL);
+		boolean holdingShift = Mouse.isButtonDown(KeyEvent.VK_SHIFT);
+		boolean holdingAlt = Mouse.isButtonDown(KeyEvent.VK_ALT);
+		if(sequence.contains("CTRL") && !holdingCtrl) {
 			r.keyPress(KeyEvent.VK_CONTROL);
 		}
-		if(sequence.contains("SHIFT")) {
+		if(sequence.contains("SHIFT") && !holdingShift) {
 			r.keyPress(KeyEvent.VK_SHIFT);
 		}
-		if(sequence.contains("ALT")) {
+		if(sequence.contains("ALT") && !holdingAlt) {
 			r.keyPress(KeyEvent.VK_ALT);
 		}
 		Thread.sleep(100);
 		r.keyPress(((int)c));
+		Thread.sleep(50);
 		r.keyRelease(((int)c));
 		Thread.sleep(100);
-		if(sequence.contains("ALT")) {
+		if(sequence.contains("ALT") && !holdingAlt) {
 			r.keyRelease(KeyEvent.VK_ALT);
 		}
-		if(sequence.contains("SHIFT")) {
+		if(sequence.contains("SHIFT") && !holdingShift) {
 			r.keyRelease(KeyEvent.VK_SHIFT);
 		}
-		if(sequence.contains("CTRL")) {
+		if(sequence.contains("CTRL") && !holdingCtrl) {
 			r.keyRelease(KeyEvent.VK_CONTROL);
 		}
 	}
@@ -137,6 +186,9 @@ public class HackerMonitor {
 		new Thread() {
 			public void run() {
 				if(!currentlyRecording) {
+					return;
+				}
+				if(!Mouse.isGrabbed()) {
 					return;
 				}
 				currentlyRecording = false;
@@ -151,8 +203,7 @@ public class HackerMonitor {
 	}
 	
 	public void printList() {
-		Util.print("§r§9-----------------------------------------------------§r");
-		Util.print("                              §bRecording List");
+		Util.print("                             \u00A7bRecording List");
 		for(String playerName : this.hackerList) {
 			IChatComponent comp = new ChatComponentText(ChatFormatting.GOLD + playerName);
 			ChatStyle style = new ChatStyle().setChatClickEvent(new ClickEvent(Action.RUN_COMMAND, "/lagg record remove " + playerName));
@@ -161,6 +212,5 @@ public class HackerMonitor {
 			Util.print(comp);
 		}
 		Util.print(ChatFormatting.DARK_GREEN + "Total: " + hackerList.size());
-		Util.print("§r§9-----------------------------------------------------§r");
 	}
 }

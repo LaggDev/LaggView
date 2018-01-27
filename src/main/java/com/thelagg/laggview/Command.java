@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.mojang.realmsclient.gui.ChatFormatting;
+import com.orangemarshall.hudproperty.test.DelayedTask;
+import com.thelagg.laggview.games.MegaWallsGame;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -13,6 +16,7 @@ import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumChatFormatting;
 
 public class Command extends CommandBase {
@@ -34,10 +38,46 @@ public class Command extends CommandBase {
 	public String getCommandUsage(ICommandSender sender) {
 		return "";
 	}
+	
+	@Override
+	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+		if(args.length<=1) {
+			return getListOfStringsMatchingLastWord(args, "record","hud","hotkeys","parties","finals","stats");
+		}
+		switch(args[0]) {
+		case "record":
+			List<String> modifiedList = getPlayerNamesInTab();
+			modifiedList.add(0, "toggle");
+			modifiedList.add(0,"list");
+			return getListOfStringsMatchingLastWord(args,modifiedList);
+		case "stats":
+			return getListOfStringsMatchingLastWord(args,this.getPlayerNamesInTab());
+		default:
+			return Lists.newArrayList();
+		}
+	}
+	
+	public List<String> getPlayerNamesInTab() {
+		List<String> list = new ArrayList<String>();
+		if(Minecraft.getMinecraft().ingameGUI.getTabList() instanceof TabOverlay) {
+			TabOverlay tab = (TabOverlay)Minecraft.getMinecraft().ingameGUI.getTabList();
+			for(NetworkPlayerInfo i : tab.getCurrentlyDisplayedPlayers()) {
+				list.add(i.getGameProfile().getName());
+			}
+		}
+		return list;
+	}
 
 	@Override
 	public void processCommand(ICommandSender sender, final String[] args) throws CommandException {
+		if(args.length<1) {
+			Util.print("/lagg [hud|hotkeys|test|parties|finals|record|stats]");
+			return;
+		}
 		switch(args[0]) {
+		case "hud":
+			new DelayedTask(() -> laggView.hudProperty.openConfigScreen(), 1);
+			break;
 		case "hotkeys":
 			new HotkeyGui(laggView.hackerMonitor.getStartRecordingHotkey(),laggView.hackerMonitor.getStopRecordingHotkey(),laggView);
 			break;
@@ -56,30 +96,33 @@ public class Command extends CommandBase {
 			msg += ChatFormatting.GREEN + "}";
 			Util.print(msg);
 			break;
+		case "finals":
+			g = LaggView.getInstance().gameUpdater.getCurrentGame();
+			if(g==null || !(g instanceof MegaWallsGame)) {
+				Util.print("Not currently in a mega walls game");
+			} else {
+				MegaWallsGame mwGame = (MegaWallsGame)g;
+				mwGame.printFinalKillsByTeam();
+			}
+			break;
 		case "record":
 				switch(args[1]) {
+				case "toggle":
+					laggView.hackerMonitor.toggleRecording();
+					break;
 				case "list":
 					laggView.hackerMonitor.printList();
 					break;
 				case "remove":
-					String hackerName = args[2].toLowerCase();
-					if(laggView.hackerMonitor.hackerList.contains(hackerName)) {
-						laggView.hackerMonitor.hackerList.remove(hackerName);
-						Util.print(EnumChatFormatting.DARK_PURPLE + "Removed " + EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_PURPLE + " from hacker list");
+					if(args.length==3) {
+						laggView.hackerMonitor.remove(args[2]);
 					} else {
-						Util.print(EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_RED + " is not on your hacker list!");
-					}	
+						Util.print(ChatFormatting.DARK_RED + "Please specify the player");
+					}
 				break;
 				default:
 					if(args.length==2) {
-						hackerName = args[1].toLowerCase();
-						if(!laggView.hackerMonitor.hackerList.contains(hackerName)) {
-							laggView.hackerMonitor.hackerList.add(hackerName);
-							Util.print(EnumChatFormatting.DARK_PURPLE + "Added " + EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_PURPLE + " to hacker list");
-						} else {
-							laggView.hackerMonitor.hackerList.remove(hackerName);
-							Util.print(EnumChatFormatting.DARK_PURPLE + "Removed " + EnumChatFormatting.GOLD + hackerName + EnumChatFormatting.DARK_PURPLE + " from hacker list");
-						}
+						laggView.hackerMonitor.addOrRemove(args[1]);
 					} else {
 						Util.print("Couldn't recognize that command, sorry :/");
 					}
@@ -92,45 +135,6 @@ public class Command extends CommandBase {
 			} else {
 				Util.print(EnumChatFormatting.GOLD + "thelagg.com/wrapper/player/" + args[1]);
 			}
-			break;
-		case "scoretest":
-			List<String> scorelist = GuiOverlay.getSidebarScores(Minecraft.getMinecraft().theWorld.getScoreboard());
-			for(String str : scorelist) {
-				Util.print(str);
-			}
-	        Util.print(EnumChatFormatting.GREEN + "Done! :)");
-			break;
-		case "tabtest":
-			Minecraft mc = Minecraft.getMinecraft();
-			NetHandlerPlayClient nethandlerplayclient = mc.thePlayer.sendQueue;
-			Ordering<NetworkPlayerInfo> field_175252_a = Ordering.from(new TabOverlay.PlayerComparator());
-	        List<NetworkPlayerInfo> list = field_175252_a.<NetworkPlayerInfo>sortedCopy(nethandlerplayclient.getPlayerInfoMap());
-	        for(NetworkPlayerInfo player : list) {
-	        	if(player!=null) {
-		        	Util.print(TabOverlay.getPlayerNameStatic(player) + " " + player.getLocationSkin().getResourcePath());
-	        	}
-	        }
-	        Util.print(EnumChatFormatting.GREEN + "Done! :)");
-			break;
-		case "speed":
-			new Thread() {
-				public void run() {
-					try {
-						Thread.sleep(2000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					toggleSpeed = true;
-					try {
-						Thread.sleep(Integer.parseInt(args[1]));
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					toggleSpeed = false;
-					times = new ArrayList<Double>();
-				}
-			}.start();
-
 			break;
 		default:
 			System.out.println("that's not a valid command!");

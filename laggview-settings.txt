@@ -1,1 +1,1 @@
-{"toggleRecordingOnHotkey":"CTRL + J","toggleRecordingOffHotkey":"CTRL + I"}
+{"textHudX":0.0078125,"hackersToRecord":[],"textHudY":0.017699115044247787,"toggleRecording":true,"toggleRecordingOnHotkey":"CTRL + J","toggleRecordingOffHotkey":"CTRL + I"}

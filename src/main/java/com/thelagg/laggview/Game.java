@@ -2,6 +2,7 @@ package com.thelagg.laggview;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -73,7 +74,7 @@ public class Game {
 	private ArrayList<UUID> playerUUIDs;
 	private int coins;
 	private ArrayList<ArrayList<String>> parties;
-	private Map<Long,String> chatMessages;
+	protected List<ChatMessage> chatMessages;
 	private GameType gameType;
 	private String serverId;
 	private long timeJoined;
@@ -90,7 +91,7 @@ public class Game {
 		timeJoined = System.currentTimeMillis();
 		playerUUIDs = new ArrayList<UUID>();
 		playerNames = new ArrayList<String>();
-		chatMessages = new HashMap<Long,String>();
+		chatMessages = new ArrayList<ChatMessage>();
 		parties = new ArrayList<ArrayList<String>>();
 		coins = 0;
 		MinecraftForge.EVENT_BUS.register(this);
@@ -133,14 +134,14 @@ public class Game {
 	public void onChat(ClientChatReceivedEvent event) {
 		long time = System.currentTimeMillis();
 		if(event.type!=2) {
-			chatMessages.put(time, event.message.getFormattedText());
+			chatMessages.add(new ChatMessage(time,event.message.getFormattedText()));
 			countCoins(event.message.getFormattedText());
 			processParty(time,event.message.getFormattedText());
 		}
 	}
 	
 	private void processParty(long time,String msg) {
-		Pattern p = Pattern.compile("§r§.{1}(.*?)§r§e has joined \\(§r§b\\d+§r§e/§r§b\\d+§r§e\\)!§r");
+		Pattern p = Pattern.compile("\u00A7r\u00A7.{1}(.*?)\u00A7r\u00A7e has joined \\(\u00A7r\u00A7b\\d+\u00A7r\u00A7e/\u00A7r\u00A7b\\d+\u00A7r\u00A7e\\)!\u00A7r");
 		Matcher m = p.matcher(msg);
 		long lastTime;
 		try {
@@ -148,7 +149,6 @@ public class Game {
 		} catch (ClassCastException e) {
 			lastTime = ((Integer)lastPartyMessage[0]);
 		}
-		System.out.println(time + " " + lastTime);
 		boolean bool = m.find();
 		if(bool && time-lastTime<100) {
 			String thisPlayer = m.group(1);
@@ -179,7 +179,6 @@ public class Game {
 		for(int i = 0; i<this.hudText.size(); i++) {
 			HudText entry = this.hudText.get(i);
 			if(hudText.samePriority(entry)) {
-				System.out.println("updating hud");
 				this.hudText.remove(entry);
 			}
 		}
@@ -191,7 +190,7 @@ public class Game {
 	}
 	
 	public void countCoins(String msg) {
-		Matcher m = Pattern.compile("§r§6\\+(\\d+) coins").matcher(msg);
+		Matcher m = Pattern.compile("\u00A7r\u00A76\\+(\\d+) coins").matcher(msg);
 		if(m.find()) {
 			try {
 				coins += Integer.parseInt(m.group(1));
@@ -201,14 +200,35 @@ public class Game {
 			}
 		}
 	}
-	
-	public static class Message {
-		public long time;
-		public String msg;
-	}
 
 	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
 		return false;
+	}
+	
+	public static class ChatMessage {
+		private long time;
+		private String msg;
+		
+		public ChatMessage(long time, String msg) {
+			this.time = time;
+			this.msg = msg;
+		}
+		
+		public void setTime(long l) {
+			time = l;
+		}
+		
+		public void setMsg(String s) {
+			this.msg = s;
+		}
+		
+		public long getTime() {
+			return this.time;
+		}
+		
+		public String getMsg() {
+			return this.msg;
+		}
 	}
 	
 }

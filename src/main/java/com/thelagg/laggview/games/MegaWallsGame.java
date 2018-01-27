@@ -1,6 +1,8 @@
 package com.thelagg.laggview.games;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,20 +11,25 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.Game;
 import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.TabOverlay;
+import com.thelagg.laggview.Util;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
 import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
 public class MegaWallsGame extends Game {
 
-	Map<String,Integer> playerFinalKills = new HashMap<String,Integer>();
+	private Map<String,Integer> playerFinalKills = new HashMap<String,Integer>();
 	private int kills, assists, finalKills, finalAssists;
+	private List<PotionEffect> activePotionEffects;
 	
 	public MegaWallsGame(String serverId, Minecraft mc, LaggView laggView) {
 		super(GameType.MEGA_WALLS, serverId,mc, laggView);
@@ -36,6 +43,62 @@ public class MegaWallsGame extends Game {
 		this.updateHudText(new HudText(Priority.ASSISTS,ChatFormatting.LIGHT_PURPLE + "Assists: " + assists));
 	}
 
+	public void sendToServer() {
+		
+	}
+	
+	public void printFinalKillsByTeam() {
+		new Thread() {
+			public void run() {
+				String str = "";
+				if(Minecraft.getMinecraft().ingameGUI.getTabList() instanceof TabOverlay) {
+					TabOverlay tab = (TabOverlay)Minecraft.getMinecraft().ingameGUI.getTabList();
+					NetworkPlayerInfo[] players = tab.currentlyDisplayedPlayers;
+					Map<Character,Integer> finalCounts = new HashMap<Character,Integer>();
+					for(NetworkPlayerInfo p : players) {
+						String name = tab.getPlayerName(p);
+						System.out.println(name);
+						Matcher m = Pattern.compile("\u00A7.{1}\u00A7(.{1})(\\[.{1}] |)(\u00A7.{1}|)(\\S+)\u00A77 \\[.{3}]").matcher(name);
+						if(m.find()) {
+							char team = m.group(1).charAt(0);
+							String playerName = m.group(4);
+							if(MegaWallsGame.this.playerFinalKills.containsKey(playerName)) {
+								int numberOfFinals = MegaWallsGame.this.playerFinalKills.get(playerName);
+								finalCounts.put(team, finalCounts.get(team)==null?numberOfFinals:(finalCounts.get(team)+numberOfFinals));
+							}
+						} else {
+							System.out.println("could not match name for player: " + name);
+						}
+					}
+					for(Character c : finalCounts.keySet()) {
+						str += "\u00A7" + c.toString() + "" + finalCounts.get(c).toString() + " ";
+					}
+					Util.print(str);
+				} else {
+					Util.print("Error, tab overlay not loaded");
+				}
+			}
+		}.start();
+	}
+	
+	@Override
+	public void onTick(ClientTickEvent event) {
+		EntityPlayerSP me = mc.thePlayer;
+		Collection<PotionEffect> potionEffects = me==null?null:me.getActivePotionEffects();
+		if(potionEffects!=null) {
+            for (PotionEffect potioneffect : potionEffects) {
+                if (!activePotionEffects.contains(potioneffect)) {
+                    onPotionAdded(potioneffect);
+                    activePotionEffects.add(potioneffect);
+                }
+            }
+		}
+	}
+	
+	public void onPotionAdded(PotionEffect potionEffect) {
+		
+	}
+	
 	@Override
 	public void onChat(ClientChatReceivedEvent event) {
 		super.onChat(event);
@@ -44,10 +107,10 @@ public class MegaWallsGame extends Game {
 	}
 	
 	public void checkForMyKillsAndAssists(String msg) {
-		Matcher m = Pattern.compile("§r§6\\+(\\d+) coins .*?§r§b§lFINAL KILL§r").matcher(msg);
-		Matcher m2 = Pattern.compile("§r§6\\+(\\d+) coins .*?§r§b§lFINAL KILL §r§c§lASSIST §r§6on §r§.{1}\\S+§r").matcher(msg);
-		Matcher m3 = Pattern.compile("§r§6\\+(\\d+) coins .*?§r§6 \\(\\d+/18 Kills\\)§r").matcher(msg);
-		Matcher m4 = Pattern.compile("§r§6\\+(\\d+) coins .*?§r§6 \\(\\d+/18 Assists\\) §r§c§lASSIST §r§6on §r§.{1}\\S+§r").matcher(msg);
+		Matcher m = Pattern.compile("\u00A7r\u00A76\\+(\\d+) coins .*?\u00A7r\u00A7b\u00A7lFINAL KILL\u00A7r").matcher(msg);
+		Matcher m2 = Pattern.compile("\u00A7r\u00A76\\+(\\d+) coins .*?\u00A7r\u00A7b\u00A7lFINAL KILL \u00A7r\u00A7c\u00A7lASSIST \u00A7r\u00A76on \u00A7r\u00A7.{1}\\S+\u00A7r").matcher(msg);
+		Matcher m3 = Pattern.compile("\u00A7r\u00A76\\+(\\d+) coins .*?\u00A7r\u00A76 \\(\\d+/18 Kills\\)\u00A7r").matcher(msg);
+		Matcher m4 = Pattern.compile("\u00A7r\u00A76\\+(\\d+) coins .*?\u00A7r\u00A76 \\(\\d+/18 Assists\\) \u00A7r\u00A7c\u00A7lASSIST \u00A7r\u00A76on \u00A7r\u00A7.{1}\\S+\u00A7r").matcher(msg);
 		if(m.find()) {
 			finalKills++;
 			this.updateHudText(new HudText(Priority.FINAL_KILLS,ChatFormatting.LIGHT_PURPLE + "Final Kills: " + finalKills));
@@ -64,18 +127,16 @@ public class MegaWallsGame extends Game {
 	}
 	
 	public void countFinals(String msg) {
-		Matcher m = Pattern.compile("§r§.{1}\\S+§r§f §r§f.*? by §r§.{1}(\\S+)('s |)§r").matcher(msg);
-		if(m.find()) {
+		Matcher m = Pattern.compile("\u00A7r\u00A7.{1}\\S+\u00A7r\u00A7f \u00A7r\u00A7f.*? by \u00A7r\u00A7.{1}(\\S+)('s |)\u00A7r").matcher(msg);
+		String lastMsg = chatMessages.size()<2?null:this.chatMessages.get(chatMessages.size()-2).getMsg();
+		Matcher m3 = Pattern.compile("\u00A7r\u00A76\\+(\\d+) coins .*?\u00A7r\u00A76 \\(\\d+/18 Kills\\)\u00A7r").matcher(lastMsg);
+		if(m.find() && !m3.find()) {
 			addFinalKill(m.group(1));
-		}		
+		}
 	}
 	
 	public void addFinalKill(String player) {
-		if(playerFinalKills.containsKey(player)) {
-			playerFinalKills.put(player, playerFinalKills.get(player)+1);
-		} else {
-			playerFinalKills.put(player, 1);
-		}
+		playerFinalKills.put(player, playerFinalKills.get(player)==null?1:(playerFinalKills.get(player)+1));
 	}
 	
 	@Override
