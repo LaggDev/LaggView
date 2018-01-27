@@ -2,6 +2,7 @@ package com.thelagg.laggview;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Field;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,12 +12,16 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.mojang.authlib.GameProfile;
 import com.orangemarshall.hudproperty.HudPropertyApi;
 import com.thelagg.laggview.hud.GameUpdater;
 import com.thelagg.laggview.hud.Hud;
 import com.thelagg.laggview.settings.Settings;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.network.NetworkManager;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -70,6 +75,28 @@ public class LaggView {
 			try {
 				mc.ingameGUI = new GuiOverlay(mc,this);
 			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		if(mc.thePlayer!=null && mc.thePlayer.sendQueue!=null && !(mc.thePlayer.sendQueue instanceof MyPacketHandler)) {
+			try {
+				Field fsendQueue = mc.thePlayer.getClass().getDeclaredField("sendQueue");
+				fsendQueue.setAccessible(true);
+				NetHandlerPlayClient sendQueue = (NetHandlerPlayClient) fsendQueue.get(mc.thePlayer);
+				Field fguiScreen = sendQueue.getClass().getDeclaredField("guiScreenServer");
+				fguiScreen.setAccessible(true);
+				Field fnetManager = sendQueue.getClass().getDeclaredField("netManager");
+				fnetManager.setAccessible(true);
+				Field fprofile = sendQueue.getClass().getDeclaredField("profile");
+				fprofile.setAccessible(true);
+				
+				GuiScreen guiScreen = (GuiScreen) fguiScreen.get(sendQueue);
+				NetworkManager networkManager = (NetworkManager) fnetManager.get(sendQueue);
+				GameProfile gameProfile = (GameProfile) fprofile.get(sendQueue);
+				fsendQueue.set(mc.thePlayer, new MyPacketHandler(mc,guiScreen,networkManager,gameProfile));
+				
+			} catch (Exception e) {
+				System.err.println("error replacing PacketHandler");
 				e.printStackTrace();
 			}
 		}

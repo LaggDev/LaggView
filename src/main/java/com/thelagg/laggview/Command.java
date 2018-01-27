@@ -8,6 +8,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.test.DelayedTask;
+import com.thelagg.laggview.apirequests.NameHistoryRequest;
+import com.thelagg.laggview.apirequests.NameToUUIDRequest;
 import com.thelagg.laggview.games.MegaWallsGame;
 
 import net.minecraft.client.Minecraft;
@@ -42,7 +44,7 @@ public class Command extends CommandBase {
 	@Override
 	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
 		if(args.length<=1) {
-			return getListOfStringsMatchingLastWord(args, "record","hud","hotkeys","parties","finals","stats");
+			return getListOfStringsMatchingLastWord(args, "name","record","hud","hotkeys","parties","finals","stats");
 		}
 		switch(args[0]) {
 		case "record":
@@ -50,6 +52,7 @@ public class Command extends CommandBase {
 			modifiedList.add(0, "toggle");
 			modifiedList.add(0,"list");
 			return getListOfStringsMatchingLastWord(args,modifiedList);
+		case "name":
 		case "stats":
 			return getListOfStringsMatchingLastWord(args,this.getPlayerNamesInTab());
 		default:
@@ -130,10 +133,27 @@ public class Command extends CommandBase {
 				}
 			break;
 		case "stats":
-			if(args[1]==null) {
-				Util.print("/stats <player>");
+			if(args.length<2) {
+				Util.print("/lagg stats <player>");
 			} else {
 				Util.print(EnumChatFormatting.GOLD + "thelagg.com/wrapper/player/" + args[1]);
+			}
+			break;
+		case "name":
+			if(args.length<2) {
+				Util.print("/lagg name <player>");
+			} else {
+				new Thread() {
+					public void run() {
+						NameToUUIDRequest request1 = laggView.apiCache.getNameToUUIDRequest(args[1], 0);
+						NameHistoryRequest r = laggView.apiCache.getNameHistoryResult(request1.getUUID(), 0);
+						if(r!=null) {
+							r.print();
+						} else {
+							Util.print(EnumChatFormatting.DARK_RED + "Could not find a player by the name " + args[1]);
+						}
+					}
+				}.start();
 			}
 			break;
 		default:

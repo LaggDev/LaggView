@@ -38,7 +38,7 @@ public class ApiCache {
 			GuildRequest r = new GuildRequest(uuid,this);
 			r.queue(priority);
 			if(priority<1) {
-				while(value==null) {
+				while(value==null && requestQueue.contains(r)) {
 					value = guildCache.get(uuid);
 				}
 			}
@@ -52,7 +52,7 @@ public class ApiCache {
 			GuildRequest r = new GuildRequest(name,this);
 			r.queue(priority);
 			if(priority<1) {
-				while(value==null) {
+				while(value==null && requestQueue.contains(r)) {
 					value = guildCache.get(name);
 				}
 			}
@@ -62,42 +62,30 @@ public class ApiCache {
 	
 	public GuildRequest getGuildResult(String playerUsername, int priority) {
 		NameToUUIDRequest uuidRequest = getNameToUUIDRequest(playerUsername,priority);
-		if(uuidRequest==null && priority>=1) {
+		if(uuidRequest==null) {
 			return null;
-		}
-		while(uuidRequest==null) {
-			uuidRequest = getNameToUUIDRequest(playerUsername,priority);
 		}
 		if(uuidRequest.getUUID()==null) {
 			return null;
 		}
 		GuildRequest guildRequest = getGuildResult(uuidRequest.getUUID(),priority);
-		if(guildRequest==null && priority>=1) {
+		if(guildRequest==null) {
 			return null;
-		}
-		while(guildRequest==null) {
-			guildRequest = getGuildResult(uuidRequest.getUUID(),priority);
 		}
 		return guildRequest;
 	}
 	
 	public PlayerRequest getPlayerResult(String name, int priority) {
 		NameToUUIDRequest uuidRequest = getNameToUUIDRequest(name,priority);
-		if(uuidRequest==null && priority>=1) {
+		if(uuidRequest==null) {
 			return null;
-		}
-		while(uuidRequest==null) {
-			uuidRequest = getNameToUUIDRequest(name,priority);
 		}
 		if(uuidRequest.getUUID()==null) {
 			return null;
 		}
 		PlayerRequest playerRequest = getPlayerResult(uuidRequest.getUUID(),priority);
-		if(playerRequest==null && priority>=1) {
+		if(playerRequest==null) {
 			return null;
-		}
-		while(playerRequest==null) {
-			playerRequest = getPlayerResult(uuidRequest.getUUID(),priority);
 		}
 		return playerRequest;
 	}
@@ -108,7 +96,7 @@ public class ApiCache {
 			SessionRequest r = new SessionRequest(uuid,this);
 			r.queue(priority);
 			if(priority<1) {
-				while(value==null) {
+				while(value==null && requestQueue.contains(r)) {
 					value = sessionCache.get(uuid);
 				}
 			}
@@ -118,11 +106,11 @@ public class ApiCache {
 	
 	public NameHistoryRequest getNameHistoryResult(UUID uuid, int priority) {
 		NameHistoryRequest value = nameHistoryCache.get(uuid);
-		if(value==null) {
+		if(value==null && uuid!=null) {
 			NameHistoryRequest r = new NameHistoryRequest(uuid,this);
 			r.queue(priority);
 			if(priority<1) {
-				while(value==null) {
+				while(value==null && requestQueue.contains(r)) {
 					value = nameHistoryCache.get(uuid);
 				}
 			}
@@ -136,7 +124,7 @@ public class ApiCache {
 			PlayerRequest r = new PlayerRequest(uuid,this);
 			r.queue(priority);
 			if(priority<1) {
-				while(value==null) {
+				while(value==null && requestQueue.contains(r)) {
 					value = playerCache.get(uuid);
 				}
 			}
@@ -160,7 +148,7 @@ public class ApiCache {
 			NameToUUIDRequest r = new NameToUUIDRequest(name,this);
 			r.queue(priority);
 			if(priority<1) {
-				while(value==null) {
+				while(value==null && requestQueue.contains(r)) {
 					value = nameToUUIDCache.get(name);
 				}
 			}

@@ -127,12 +127,26 @@ public class Game {
 	
 	@SubscribeEvent
 	public void onTick(ClientTickEvent event) {
-		
+		if(Minecraft.getMinecraft().ingameGUI.getTabList() instanceof TabOverlay) {
+			TabOverlay tab = (TabOverlay)Minecraft.getMinecraft().ingameGUI.getTabList();
+			NetworkPlayerInfo[] players = tab.getCurrentlyDisplayedPlayers();
+			for(NetworkPlayerInfo player : players) {
+				if(!laggView.apiCache.playerCache.containsKey(player.getGameProfile().getId())) {
+					laggView.apiCache.getPlayerResult(player.getGameProfile().getId(), 5);
+				}
+			}
+		}
+	}
+	
+	public boolean containsL(String formattedMsg) {
+		//TODO
+		return false;
 	}
 	
 	@SubscribeEvent
 	public void onChat(ClientChatReceivedEvent event) {
 		long time = System.currentTimeMillis();
+		if(containsL(event.message.getFormattedText())) event.setCanceled(true);
 		if(event.type!=2) {
 			chatMessages.add(new ChatMessage(time,event.message.getFormattedText()));
 			countCoins(event.message.getFormattedText());

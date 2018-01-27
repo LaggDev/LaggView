@@ -1,15 +1,21 @@
 package com.thelagg.laggview.apirequests;
 
 import java.io.IOException;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.UUID;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.ibm.icu.util.Calendar;
+import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.ApiCache;
 import com.thelagg.laggview.ApiRequest;
 import com.thelagg.laggview.URLConnectionReader;
+import com.thelagg.laggview.Util;
 
 public class NameHistoryRequest extends ApiRequest {
 
@@ -35,7 +41,21 @@ public class NameHistoryRequest extends ApiRequest {
 	}
 	
 	public void print() {
-		System.out.println(this.result.toJSONString());
+		int i = 0;
+		while(result.containsKey(Integer.toString(i))) {
+			i++;
+		}
+		i--;
+		for(int j = i; j>=0; j--) {
+			String name = (String) this.getObjectAtPath(Integer.toString(j) + "/name");
+			Object timeObj = this.getObjectAtPath(Integer.toString(j) + "/changedToAt");
+			String date = "";
+			if(timeObj!=null) {
+				long time = (Long) timeObj;
+				date = new SimpleDateFormat("MM/dd/yyyy").format(new Date(time));
+			}
+			Util.print(ChatFormatting.GOLD + name + " " + ChatFormatting.LIGHT_PURPLE + date);
+		}
 	}
 
 	@Override

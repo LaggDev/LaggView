@@ -1,5 +1,6 @@
 package com.thelagg.laggview.games;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +30,7 @@ public class MegaWallsGame extends Game {
 
 	private Map<String,Integer> playerFinalKills = new HashMap<String,Integer>();
 	private int kills, assists, finalKills, finalAssists;
-	private List<PotionEffect> activePotionEffects;
+	private List<PotionEffect> activePotionEffects = new ArrayList<PotionEffect>();
 	
 	public MegaWallsGame(String serverId, Minecraft mc, LaggView laggView) {
 		super(GameType.MEGA_WALLS, serverId,mc, laggView);
@@ -83,6 +84,8 @@ public class MegaWallsGame extends Game {
 	
 	@Override
 	public void onTick(ClientTickEvent event) {
+		super.onTick(event);
+		/*
 		EntityPlayerSP me = mc.thePlayer;
 		Collection<PotionEffect> potionEffects = me==null?null:me.getActivePotionEffects();
 		if(potionEffects!=null) {
@@ -92,7 +95,7 @@ public class MegaWallsGame extends Game {
                     activePotionEffects.add(potioneffect);
                 }
             }
-		}
+		}*/
 	}
 	
 	public void onPotionAdded(PotionEffect potionEffect) {

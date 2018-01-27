@@ -155,7 +155,7 @@ public class GuiOverlay extends GuiIngameForge {
             ++j;
             ScorePlayerTeam scoreplayerteam1 = scoreboard.getPlayersTeam(score1.getPlayerName());
             String s1 = ScorePlayerTeam.formatPlayerName(scoreplayerteam1, score1.getPlayerName());            
-            String s2 = EnumChatFormatting.RED + "" + score1.getScorePoints();
+            String s2 = EnumChatFormatting.RED + "" /*+ score1.getScorePoints()*/;
             int k = j1 - j * this.getFontRenderer().FONT_HEIGHT;
             int l = p_180475_2_.getScaledWidth() - k1 + 2;
             drawRect(l1 - 2, k, l, k + this.getFontRenderer().FONT_HEIGHT, 1342177280);
