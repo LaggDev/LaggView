@@ -85,6 +85,7 @@ public class MegaWallsGame extends Game {
 	@Override
 	public void onTick(ClientTickEvent event) {
 		super.onTick(event);
+		
 		/*
 		EntityPlayerSP me = mc.thePlayer;
 		Collection<PotionEffect> potionEffects = me==null?null:me.getActivePotionEffects();
@@ -132,6 +133,7 @@ public class MegaWallsGame extends Game {
 	public void countFinals(String msg) {
 		Matcher m = Pattern.compile("\u00A7r\u00A7.{1}\\S+\u00A7r\u00A7f \u00A7r\u00A7f.*? by \u00A7r\u00A7.{1}(\\S+)('s |)\u00A7r").matcher(msg);
 		String lastMsg = chatMessages.size()<2?null:this.chatMessages.get(chatMessages.size()-2).getMsg();
+		if(lastMsg==null) return;
 		Matcher m3 = Pattern.compile("\u00A7r\u00A76\\+(\\d+) coins .*?\u00A7r\u00A76 \\(\\d+/18 Kills\\)\u00A7r").matcher(lastMsg);
 		if(m.find() && !m3.find()) {
 			addFinalKill(m.group(1));

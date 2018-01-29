@@ -1,5 +1,6 @@
 package com.thelagg.laggview;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +14,7 @@ import com.thelagg.laggview.apirequests.NameToUUIDRequest;
 import com.thelagg.laggview.games.MegaWallsGame;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiPlayerTabOverlay;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.command.CommandBase;
@@ -85,11 +87,28 @@ public class Command extends CommandBase {
 			new HotkeyGui(laggView.hackerMonitor.getStartRecordingHotkey(),laggView.hackerMonitor.getStopRecordingHotkey(),laggView);
 			break;
 		case "test":
-			Game g = LaggView.getInstance().gameUpdater.getCurrentGame();
-			Util.print(ChatFormatting.GOLD + g.toString());
+			GuiPlayerTabOverlay tab1 = Minecraft.getMinecraft().ingameGUI.getTabList();
+			if(tab1 instanceof TabOverlay) {
+				TabOverlay tab = (TabOverlay)tab1;
+				for(NetworkPlayerInfo playerInfo : tab.getCurrentlyDisplayedPlayers()) {
+					if(playerInfo.getGameProfile().getName().equals(args[1])) {
+						List<Field> fields = MyPacketHandler.getFields(NetworkPlayerInfo.class);
+						String s = playerInfo.toString() + " (" + fields.size() + ") ";
+						for(Field f : fields) {
+							f.setAccessible(true);
+							try {
+								s += f.getName() + ":" + f.get(playerInfo) + " ";
+							} catch (IllegalArgumentException | IllegalAccessException e) {
+								e.printStackTrace();
+							}
+						}
+						Util.print(s);
+					}
+				}
+			}
 			break;
 		case "parties":
-			g = LaggView.getInstance().gameUpdater.getCurrentGame();
+			Game g = LaggView.getInstance().gameUpdater.getCurrentGame();
 			String msg = ChatFormatting.GREEN + "{";
 			int i = 0;
 			for(ArrayList<String> party : g.getParties()) {

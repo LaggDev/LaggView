@@ -1,5 +1,6 @@
 package com.thelagg.laggview;
 
+import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.WorldSettings;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import scala.actors.threadpool.Arrays;
 
 public class TabOverlay extends GuiPlayerTabOverlay {
 	
@@ -44,6 +46,25 @@ public class TabOverlay extends GuiPlayerTabOverlay {
     private Map<NetworkPlayerInfo,String> nameInTab;
     private LaggView laggView;
     public NetworkPlayerInfo[] currentlyDisplayedPlayers = {};
+    
+    public static void ReplaceTabOverlay(LaggView laggView,GuiOverlay guiOverlay) {
+    	Field f = null;
+    	try {
+    		f = GuiIngame.class.getDeclaredField("overlayPlayerList");
+    	} catch (NoSuchFieldException e) {
+    		try {
+				f = GuiIngame.class.getDeclaredField("field_175196_v");
+			} catch (NoSuchFieldException | SecurityException e1) {
+				e1.printStackTrace();
+			}
+    	}
+    	f.setAccessible(true);
+    	try {
+			f.set(guiOverlay, new TabOverlay(Minecraft.getMinecraft(),guiOverlay,laggView));
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+    }
     
     public TabOverlay(Minecraft mcIn, GuiIngame guiIngameIn, LaggView laggView)
     {
@@ -121,11 +142,10 @@ public class TabOverlay extends GuiPlayerTabOverlay {
     @Override
     public void renderPlayerlist(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn)
     {
-        NetHandlerPlayClient nethandlerplayclient = this.mc.thePlayer.sendQueue;
+    	NetHandlerPlayClient nethandlerplayclient = this.mc.thePlayer.sendQueue;
         List<NetworkPlayerInfo> list = field_175252_a.<NetworkPlayerInfo>sortedCopy(nethandlerplayclient.getPlayerInfoMap());
         int i = 0;
         int j = 0;
-
         for (NetworkPlayerInfo networkplayerinfo : list)
         {
             int k = this.mc.fontRendererObj.getStringWidth(this.getPlayerName(networkplayerinfo));

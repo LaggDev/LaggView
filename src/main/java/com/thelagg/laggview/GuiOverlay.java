@@ -34,15 +34,8 @@ public class GuiOverlay extends GuiIngameForge {
 	
     public GuiOverlay(Minecraft mcIn, LaggView laggView) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
     	super(mcIn);
-    	Field f;
-    	try {
-    		f = GuiIngame.class.getDeclaredField("overlayPlayerList");
-    	} catch (NoSuchFieldException e) {
-    		f = GuiIngame.class.getDeclaredField("field_175196_v");
-    	}
-    	f.setAccessible(true);
-    	f.set(this, new TabOverlay(mcIn,this,laggView));
     	this.laggView = laggView;
+    	TabOverlay.ReplaceTabOverlay(laggView,this);
 	}
     
 	/**

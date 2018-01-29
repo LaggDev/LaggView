@@ -28,6 +28,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
@@ -71,35 +72,20 @@ public class LaggView {
 	
 	@SubscribeEvent
 	public void onTick(ClientTickEvent event) {
+		
+		if(mc.thePlayer!=null && mc.thePlayer.sendQueue!=null && !(mc.thePlayer.sendQueue instanceof MyPacketHandler)) {
+			MyPacketHandler.replacePacketHandler();
+		}
+		MyPacketHandler.replaceNetworkManagerPacketHandler();
 		if(!(mc.ingameGUI instanceof GuiOverlay)) {
 			try {
 				mc.ingameGUI = new GuiOverlay(mc,this);
+				System.out.println("replacing gui overlay");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		if(mc.thePlayer!=null && mc.thePlayer.sendQueue!=null && !(mc.thePlayer.sendQueue instanceof MyPacketHandler)) {
-			try {
-				Field fsendQueue = mc.thePlayer.getClass().getDeclaredField("sendQueue");
-				fsendQueue.setAccessible(true);
-				NetHandlerPlayClient sendQueue = (NetHandlerPlayClient) fsendQueue.get(mc.thePlayer);
-				Field fguiScreen = sendQueue.getClass().getDeclaredField("guiScreenServer");
-				fguiScreen.setAccessible(true);
-				Field fnetManager = sendQueue.getClass().getDeclaredField("netManager");
-				fnetManager.setAccessible(true);
-				Field fprofile = sendQueue.getClass().getDeclaredField("profile");
-				fprofile.setAccessible(true);
-				
-				GuiScreen guiScreen = (GuiScreen) fguiScreen.get(sendQueue);
-				NetworkManager networkManager = (NetworkManager) fnetManager.get(sendQueue);
-				GameProfile gameProfile = (GameProfile) fprofile.get(sendQueue);
-				fsendQueue.set(mc.thePlayer, new MyPacketHandler(mc,guiScreen,networkManager,gameProfile));
-				
-			} catch (Exception e) {
-				System.err.println("error replacing PacketHandler");
-				e.printStackTrace();
-			}
-		}
+		
 	}
 	
 	@SubscribeEvent
