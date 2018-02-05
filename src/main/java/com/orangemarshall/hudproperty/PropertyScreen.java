@@ -3,8 +3,6 @@ package com.orangemarshall.hudproperty;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
 

@@ -27,7 +27,7 @@ public class PlayerRequest extends ApiRequest {
 		JSONObject json = new JSONObject();
 		try {
 			JSONParser parser = new JSONParser();
-			json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/wrapper/raw/player/" + this.uuid));
+			json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/hypixel/raw/player/" + this.uuid));
 		} catch (ParseException | IOException e) {
 			e.printStackTrace();
 		}
@@ -53,7 +53,7 @@ public class PlayerRequest extends ApiRequest {
 				return 0;
 			}
 			return finalKillsTotal/finalDeathsTotal;
-		} catch (NullPointerException e) {
+		} catch (NullPointerException | ClassCastException e) {
 			return 0;
 		}
 	}

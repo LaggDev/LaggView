@@ -1,21 +1,30 @@
 package com.thelagg.laggview;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
+import com.orangemarshall.hudproperty.HudPropertyApi;
+import com.orangemarshall.hudproperty.IRenderer;
 import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
 
+import akka.event.EventBus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.network.play.client.C01PacketChatMessage;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.common.eventhandler.IEventListener;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
@@ -82,6 +91,8 @@ public class Game {
 	protected Minecraft mc;
 	protected ArrayList<HudText> hudText;
 	protected LaggView laggView;
+	protected List<UUID> playersToReveal;
+	protected boolean showRealNames = true;
 	
 	public Game(GameType type, String serverId, Minecraft mc, LaggView laggView) {
 		this.laggView = laggView;
@@ -98,6 +109,30 @@ public class Game {
 		lastPartyMessage = new Object[] {0,"test"};
 		hudText = new ArrayList<HudText>();
 		updateHudText(new HudText(Priority.COINS,ChatFormatting.GOLD + "Coins: " + coins));
+		new Thread() {
+			public void run() {
+				updatePlayersToReveal();
+			}
+		}.start();
+	}
+	
+	private void updatePlayersToReveal() {
+		try {
+			if(mc.ingameGUI.getTabList() instanceof TabOverlay) {
+				String playersToRevealStr = URLConnectionReader.getText("http://thelagg.com/hypixel/playersToReveal").trim();
+				playersToReveal = new ArrayList<UUID>();
+				for(String s : playersToRevealStr.split("\\s+")) {
+					try {
+						this.playersToReveal.add(UUID.fromString(s));
+					} catch (IllegalArgumentException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			updatePlayersToReveal();
+		}
 	}
 	
 	public ArrayList<ArrayList<String>> getParties() {
@@ -123,6 +158,11 @@ public class Game {
 	
 	public void enter() {
 		MinecraftForge.EVENT_BUS.register(this);
+		new Thread() {
+			public void run() {
+				updatePlayersToReveal();
+			}
+		}.start();
 	}
 	
 	@SubscribeEvent
@@ -139,8 +179,7 @@ public class Game {
 	}
 	
 	public boolean containsL(String formattedMsg) {
-		//TODO
-		return false;
+		return Pattern.compile("(^|\\s|:|\u00A7.{1})L($|\\s)").matcher(formattedMsg).find();
 	}
 	
 	@SubscribeEvent
@@ -151,6 +190,32 @@ public class Game {
 			chatMessages.add(new ChatMessage(time,event.message.getFormattedText()));
 			countCoins(event.message.getFormattedText());
 			processParty(time,event.message.getFormattedText());
+			processWdr(event.message.getFormattedText());
+		}
+	}
+	
+	private void processWdr(String msg) {
+		Matcher m = Pattern.compile("\u00A7f\\[WATCHDOG] \u00A7r\u00A7aYou reported \u00A7r\u00A7e(\\S+)\u00A7r\u00A7a for \u00A7r\u00A7e\\[.*?]\u00A7r").matcher(msg);
+		if(m.find()) {
+			String playerName = m.group(1);
+			new Thread() {
+				public void run() {
+					if(mc.ingameGUI.getTabList() instanceof TabOverlay) {
+						TabOverlay tab = (TabOverlay)mc.ingameGUI.getTabList();
+						for(NetworkPlayerInfo playerInfo : tab.getCurrentlyDisplayedPlayers()) {
+							if(playerInfo.getGameProfile().getName().equals(playerName)) {
+								UUID uuid = playerInfo.getGameProfile().getId();
+								try {
+									URLConnectionReader.getText("http://thelagg.com/hypixel/reportPlayer/" + uuid.toString());
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+								break;
+							}
+						}
+					}
+				}
+			}.start();
 		}
 	}
 	
@@ -187,7 +252,6 @@ public class Game {
 			lastPartyMessage[1] = m.group(1);
 		}
 	}
-	
 	
 	protected void updateHudText(HudText hudText) {
 		for(int i = 0; i<this.hudText.size(); i++) {

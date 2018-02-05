@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
-import com.orangemarshall.hudproperty.test.DelayedTask;
 import com.orangemarshall.hudproperty.util.ScreenPosition;
 
 import net.minecraft.client.Minecraft;

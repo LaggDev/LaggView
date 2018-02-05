@@ -48,6 +48,9 @@ public class GameUpdater {
 	
 	@SubscribeEvent
 	public void onWorldLoad(WorldEvent.Load event) {
+		if(Minecraft.getMinecraft().getCurrentServerData()==null || Minecraft.getMinecraft().getCurrentServerData().serverIP==null) {
+			return;
+		}
 		laggView.logger.log(Level.INFO, Minecraft.getMinecraft().getCurrentServerData().serverIP);
 		if(System.currentTimeMillis()-lastWorldLoad<750 || !Minecraft.getMinecraft().getCurrentServerData().serverIP.toLowerCase().contains("hypixel.net") || this.gettingGame) {
 			return;

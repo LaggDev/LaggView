@@ -1,12 +1,13 @@
 package com.thelagg.laggview;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Ordering;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.test.DelayedTask;
 import com.thelagg.laggview.apirequests.NameHistoryRequest;
@@ -15,13 +16,15 @@ import com.thelagg.laggview.games.MegaWallsGame;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
-import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.EventBus;
+import net.minecraftforge.fml.common.eventhandler.IEventListener;
 
 public class Command extends CommandBase {
 
@@ -81,7 +84,7 @@ public class Command extends CommandBase {
 		}
 		switch(args[0]) {
 		case "hud":
-			new DelayedTask(() -> laggView.hudProperty.openConfigScreen(), 1);
+			new DelayedTask(() -> laggView.hudProperty.openConfigScreen(),1);
 			break;
 		case "hotkeys":
 			new HotkeyGui(laggView.hackerMonitor.getStartRecordingHotkey(),laggView.hackerMonitor.getStopRecordingHotkey(),laggView);
@@ -155,7 +158,7 @@ public class Command extends CommandBase {
 			if(args.length<2) {
 				Util.print("/lagg stats <player>");
 			} else {
-				Util.print(EnumChatFormatting.GOLD + "thelagg.com/wrapper/player/" + args[1]);
+				Util.print(EnumChatFormatting.GOLD + "thelagg.com/hypixel/player/" + args[1]);
 			}
 			break;
 		case "name":

@@ -3,6 +3,10 @@ package com.thelagg.laggview;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,23 +16,24 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.mojang.authlib.GameProfile;
 import com.orangemarshall.hudproperty.HudPropertyApi;
+import com.orangemarshall.hudproperty.IRenderer;
 import com.thelagg.laggview.hud.GameUpdater;
 import com.thelagg.laggview.hud.Hud;
 import com.thelagg.laggview.settings.Settings;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.network.NetworkManager;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.EventBus;
+import net.minecraftforge.fml.common.eventhandler.IEventListener;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
@@ -66,6 +71,49 @@ public class LaggView {
         this.hud = new Hud(this,mc);
 	}
 	
+	public boolean hasMod(String modId) {
+		return getMod(modId)!=null;
+	}
+	
+	public ModContainer getMod(String modId) {
+		List<ModContainer> mods = Loader.instance().getModList();
+		for(ModContainer m : mods) {
+			if(m.getModId().equals(modId)) return m;
+		} 
+		return null;
+	}
+	
+	@EventHandler
+	public void postInit(FMLPostInitializationEvent event) throws IncompatibleModException {
+		if(hasMod("mwtools")) {
+			try {
+				Field flistener = EventBus.class.getDeclaredField("listeners");
+				flistener.setAccessible(true);
+				ConcurrentHashMap<Object, ArrayList<IEventListener>> listeners = (ConcurrentHashMap<Object, ArrayList<IEventListener>>) flistener.get(MinecraftForge.EVENT_BUS);
+				for(Object o : listeners.keySet()) {
+					if(o.getClass().getName().equals("cowzgonecrazy.megawallstools.hudproperty.HudPropertyApi")) {
+						Field fregisteredRenderers = o.getClass().getDeclaredField("registeredRenderers");
+						fregisteredRenderers.setAccessible(true);
+						Set<Object> registeredRenderers = (Set<Object>) fregisteredRenderers.get(o);
+						Object[] renderers = registeredRenderers.toArray(new Object[registeredRenderers.size()]);
+						for(Object renderer : renderers) {
+							System.out.println(renderer.getClass().getName());
+							if(renderer.getClass().getName().equals("cowzgonecrazy.megawallstools.Modules.KillCounter")
+									|| renderer.getClass().getName().equals("cowzgonecrazy.megawallstools.Modules.CoinCounter")) {
+								registeredRenderers.remove(renderer);
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		if(hasMod("sidebarmod")) {
+			throw new IncompatibleModException("sidebarmod");
+		}
+	}
+	
 	public static LaggView getInstance() {
 		return instance;
 	}
@@ -85,7 +133,6 @@ public class LaggView {
 				e.printStackTrace();
 			}
 		}
-		
 	}
 	
 	@SubscribeEvent
@@ -99,6 +146,14 @@ public class LaggView {
 				LogManager.getLogger(MODID).log(Level.INFO, difference + " " + time + " " + event.message.getFormattedText());
 				lastLogin = time;
 			}
+		}
+	}
+	
+	public static class IncompatibleModException extends Exception {
+		private static final long serialVersionUID = 6962780092461975254L;
+
+		public IncompatibleModException(String modId) {
+			super("LaggView is currently incompatible with " + modId + " mod. Sorry for any inconvenience.");
 		}
 	}
 

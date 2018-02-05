@@ -28,7 +28,7 @@ public class SessionRequest extends ApiRequest {
 		JSONObject json = new JSONObject();
 		try {
 			JSONParser parser = new JSONParser();
-			json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/wrapper/raw/session/" + this.uuid));
+			json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/hypixel/raw/session/" + this.uuid));
 		} catch (ParseException | IOException e) {
 			e.printStackTrace();
 		}

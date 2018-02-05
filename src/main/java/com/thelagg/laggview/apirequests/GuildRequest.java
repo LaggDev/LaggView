@@ -32,7 +32,7 @@ public class GuildRequest extends ApiRequest {
 		if(this.uuid!=null) {
 			try {
 				JSONParser parser = new JSONParser();
-				json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/wrapper/raw/guild/byUUID/" + this.uuid));
+				json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/hypixel/raw/guild/byUUID/" + this.uuid));
 			} catch (ParseException | IOException e) {
 				e.printStackTrace();
 			}
@@ -42,7 +42,7 @@ public class GuildRequest extends ApiRequest {
 		} else {
 			try {
 				JSONParser parser = new JSONParser();
-				json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/wrapper/raw/guild/byName/" + this.name));
+				json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/hypixel/raw/guild/byName/" + this.name));
 			} catch (ParseException | IOException e) {
 				e.printStackTrace();
 			}

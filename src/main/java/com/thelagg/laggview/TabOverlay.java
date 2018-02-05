@@ -27,9 +27,9 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.WorldSettings;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import scala.actors.threadpool.Arrays;
 
 public class TabOverlay extends GuiPlayerTabOverlay {
 	
@@ -130,10 +130,14 @@ public class TabOverlay extends GuiPlayerTabOverlay {
     }
 
     public NetworkPlayerInfo[] getCurrentlyDisplayedPlayers() {
-    	NetHandlerPlayClient nethandlerplayclient = this.mc.thePlayer.sendQueue;
-    	List<NetworkPlayerInfo> list = field_175252_a.<NetworkPlayerInfo>sortedCopy(nethandlerplayclient.getPlayerInfoMap());
-        this.currentlyDisplayedPlayers = list.toArray(new NetworkPlayerInfo[list.size()]);
-        return this.currentlyDisplayedPlayers;
+    	try {
+	    	NetHandlerPlayClient nethandlerplayclient = this.mc.thePlayer.sendQueue;
+	    	List<NetworkPlayerInfo> list = field_175252_a.<NetworkPlayerInfo>sortedCopy(nethandlerplayclient.getPlayerInfoMap());
+	        this.currentlyDisplayedPlayers = list.toArray(new NetworkPlayerInfo[list.size()]);
+	        return this.currentlyDisplayedPlayers;
+    	} catch (NullPointerException e) {
+    		return new NetworkPlayerInfo[] {};
+    	}
     }
     
     /**

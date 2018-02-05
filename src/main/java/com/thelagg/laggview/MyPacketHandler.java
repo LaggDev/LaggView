@@ -17,44 +17,51 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
-import net.minecraft.network.PacketThreadUtil;
 import net.minecraft.network.play.client.C01PacketChatMessage;
-import net.minecraft.network.play.client.C03PacketPlayer;
-import net.minecraft.network.play.server.S38PacketPlayerListItem;
 
 public class MyPacketHandler extends NetHandlerPlayClient {
 	
 	public static void replacePacketHandler() {
 		try {
 			Minecraft mc = Minecraft.getMinecraft();
-			Field fsendQueue = mc.thePlayer.getClass().getDeclaredField("sendQueue");
+			
+			Field fsendQueue, fguiScreen, fnetManager, fprofile, fclientWorldController, fdoneLoadingTerrain, fplayerInfoMap, fcurrentServerMaxPlayers;
+			try {
+				fsendQueue = mc.thePlayer.getClass().getDeclaredField("sendQueue");
+				fguiScreen = NetHandlerPlayClient.class.getDeclaredField("guiScreenServer");
+				fnetManager = NetHandlerPlayClient.class.getDeclaredField("netManager");
+				fprofile = NetHandlerPlayClient.class.getDeclaredField("profile");
+				fclientWorldController = NetHandlerPlayClient.class.getDeclaredField("clientWorldController");
+				fdoneLoadingTerrain = NetHandlerPlayClient.class.getDeclaredField("doneLoadingTerrain");
+				fplayerInfoMap = NetHandlerPlayClient.class.getDeclaredField("playerInfoMap");
+				fcurrentServerMaxPlayers = NetHandlerPlayClient.class.getDeclaredField("currentServerMaxPlayers");
+			} catch (NoSuchFieldException e) {
+				fsendQueue = mc.thePlayer.getClass().getDeclaredField("field_71174_a");
+				fguiScreen = NetHandlerPlayClient.class.getDeclaredField("field_147307_j");
+				fnetManager = NetHandlerPlayClient.class.getDeclaredField("field_147302_e");
+				fprofile = NetHandlerPlayClient.class.getDeclaredField("field_175107_d");
+				fclientWorldController = NetHandlerPlayClient.class.getDeclaredField("field_147300_g");
+				fdoneLoadingTerrain = NetHandlerPlayClient.class.getDeclaredField("field_147309_h");
+				fplayerInfoMap = NetHandlerPlayClient.class.getDeclaredField("field_147310_i");
+				fcurrentServerMaxPlayers = NetHandlerPlayClient.class.getDeclaredField("field_147304_c");
+			}
+			
 			fsendQueue.setAccessible(true);
-			
-			NetHandlerPlayClient sendQueue = (NetHandlerPlayClient) fsendQueue.get(mc.thePlayer);
-			
-			Field fguiScreen = sendQueue.getClass().getDeclaredField("guiScreenServer");
 			fguiScreen.setAccessible(true);
-			Field fnetManager = sendQueue.getClass().getDeclaredField("netManager");
 			fnetManager.setAccessible(true);
-			Field fprofile = sendQueue.getClass().getDeclaredField("profile");
 			fprofile.setAccessible(true);
-			Field fclientWorldController = NetHandlerPlayClient.class.getDeclaredField("clientWorldController");
 			fclientWorldController.setAccessible(true);
-			Field fdoneLoadingTerrain = NetHandlerPlayClient.class.getDeclaredField("doneLoadingTerrain");
 			fdoneLoadingTerrain.setAccessible(true);
-			Field fplayerInfoMap = NetHandlerPlayClient.class.getDeclaredField("playerInfoMap");
 			fplayerInfoMap.setAccessible(true);
-			Field fcurrentServerMaxPlayers = NetHandlerPlayClient.class.getDeclaredField("currentServerMaxPlayers");
 			fcurrentServerMaxPlayers.setAccessible(true);
 			
-			
+			NetHandlerPlayClient sendQueue = (NetHandlerPlayClient) fsendQueue.get(mc.thePlayer);
 			GuiScreen guiScreen = (GuiScreen) fguiScreen.get(sendQueue);
 			NetworkManager networkManager = (NetworkManager) fnetManager.get(sendQueue);
 			GameProfile gameProfile = (GameProfile) fprofile.get(sendQueue);
@@ -71,12 +78,6 @@ public class MyPacketHandler extends NetHandlerPlayClient {
 			
 			fsendQueue.set(mc.thePlayer, myPacketHandler);
 			
-			
-			/*
-			Field fPacketListener = NetworkManager.class.getDeclaredField("packetListener");
-			fPacketListener.setAccessible(true);
-			fPacketListener.set(networkManager, mc.thePlayer.sendQueue);
-			*/
 			System.out.println("replacing packet handler");
 		} catch (Exception e) {
 			System.err.println("error replacing PacketHandler");
@@ -88,9 +89,15 @@ public class MyPacketHandler extends NetHandlerPlayClient {
 		try {
 			Minecraft mc = Minecraft.getMinecraft();
 			if(mc.thePlayer!=null && mc.thePlayer.sendQueue!=null && mc.thePlayer.sendQueue instanceof MyPacketHandler) {
-				Field fnetManager = NetHandlerPlayClient.class.getDeclaredField("netManager");
+				Field fnetManager, fPacketListener;
+				try {
+					fnetManager = NetHandlerPlayClient.class.getDeclaredField("netManager");
+					fPacketListener = NetworkManager.class.getDeclaredField("packetListener");
+				} catch (NoSuchFieldException e) {
+					fnetManager = NetHandlerPlayClient.class.getDeclaredField("field_147302_e");
+					fPacketListener = NetworkManager.class.getDeclaredField("field_150744_m");
+				}
 				fnetManager.setAccessible(true);
-				Field fPacketListener = NetworkManager.class.getDeclaredField("packetListener");
 				fPacketListener.setAccessible(true);
 				NetworkManager networkManager = (NetworkManager) fnetManager.get(mc.thePlayer.sendQueue);
 				INetHandler netHandler = (INetHandler) fPacketListener.get(networkManager);
@@ -109,7 +116,7 @@ public class MyPacketHandler extends NetHandlerPlayClient {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void addToSendQueue(Packet p) {
-		if(p instanceof C01PacketChatMessage && Pattern.compile("(^|\\s)L($|\\s)").matcher(((C01PacketChatMessage) p).getMessage()).find()) {
+		if(p instanceof C01PacketChatMessage  && Pattern.compile("(^|\\s)L($|\\s)").matcher(((C01PacketChatMessage) p).getMessage()).find()) {
 			Util.print(ChatFormatting.DARK_RED + "Please respect all users.");
 			return;
 		} else {

@@ -25,7 +25,7 @@ public class NameToUUIDRequest extends ApiRequest {
 		JSONObject json = new JSONObject();
 		try {
 			JSONParser parser = new JSONParser();
-			json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/wrapper/raw/nameToUUID/" + this.name));
+			json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/hypixel/raw/nameToUUID/" + this.name));
 		} catch (ParseException | IOException e) {
 			System.out.println(this.name + " is not a real player, ignoring nameToUUIDRequest");
 			json = null;

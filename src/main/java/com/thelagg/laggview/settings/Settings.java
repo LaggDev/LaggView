@@ -9,18 +9,13 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import com.thelagg.laggview.LaggView;
-import com.thelagg.laggview.URLConnectionReader;
-
-import net.minecraft.client.Minecraft;
 
 public class Settings {
 	private String toggleRecordingOnHotkey;

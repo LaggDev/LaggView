@@ -1,17 +1,24 @@
 package com.thelagg.laggview.games;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.Timer;
+
+import org.apache.logging.log4j.Level;
+
+import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.Game;
 import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.TabOverlay;
+import com.thelagg.laggview.URLConnectionReader;
 import com.thelagg.laggview.Util;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
@@ -19,7 +26,6 @@ import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EnumChatFormatting;
@@ -30,7 +36,6 @@ public class MegaWallsGame extends Game {
 
 	private Map<String,Integer> playerFinalKills = new HashMap<String,Integer>();
 	private int kills, assists, finalKills, finalAssists;
-	private List<PotionEffect> activePotionEffects = new ArrayList<PotionEffect>();
 	
 	public MegaWallsGame(String serverId, Minecraft mc, LaggView laggView) {
 		super(GameType.MEGA_WALLS, serverId,mc, laggView);
@@ -43,10 +48,7 @@ public class MegaWallsGame extends Game {
 		this.updateHudText(new HudText(Priority.KILLS,ChatFormatting.LIGHT_PURPLE + "Kills: " + kills));
 		this.updateHudText(new HudText(Priority.ASSISTS,ChatFormatting.LIGHT_PURPLE + "Assists: " + assists));
 	}
-
-	public void sendToServer() {
-		
-	}
+	
 	
 	public void printFinalKillsByTeam() {
 		new Thread() {
@@ -58,7 +60,6 @@ public class MegaWallsGame extends Game {
 					Map<Character,Integer> finalCounts = new HashMap<Character,Integer>();
 					for(NetworkPlayerInfo p : players) {
 						String name = tab.getPlayerName(p);
-						System.out.println(name);
 						Matcher m = Pattern.compile("\u00A7.{1}\u00A7(.{1})(\\[.{1}] |)(\u00A7.{1}|)(\\S+)\u00A77 \\[.{3}]").matcher(name);
 						if(m.find()) {
 							char team = m.group(1).charAt(0);
@@ -68,7 +69,7 @@ public class MegaWallsGame extends Game {
 								finalCounts.put(team, finalCounts.get(team)==null?numberOfFinals:(finalCounts.get(team)+numberOfFinals));
 							}
 						} else {
-							System.out.println("could not match name for player: " + name);
+							laggView.logger.log(Level.INFO, "could not match name for player: " + name);
 						}
 					}
 					for(Character c : finalCounts.keySet()) {
@@ -85,18 +86,6 @@ public class MegaWallsGame extends Game {
 	@Override
 	public void onTick(ClientTickEvent event) {
 		super.onTick(event);
-		
-		/*
-		EntityPlayerSP me = mc.thePlayer;
-		Collection<PotionEffect> potionEffects = me==null?null:me.getActivePotionEffects();
-		if(potionEffects!=null) {
-            for (PotionEffect potioneffect : potionEffects) {
-                if (!activePotionEffects.contains(potioneffect)) {
-                    onPotionAdded(potioneffect);
-                    activePotionEffects.add(potioneffect);
-                }
-            }
-		}*/
 	}
 	
 	public void onPotionAdded(PotionEffect potionEffect) {
@@ -148,21 +137,16 @@ public class MegaWallsGame extends Game {
 	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
         String s1 = tabOverlay.getPlayerName(player);
         
-        String name = player.getGameProfile().getName(); 
-        PlayerRequest playerRequest = laggView.apiCache.getPlayerResult(name, 1);
+        PlayerRequest playerRequest = laggView.apiCache.getPlayerResult(player.getGameProfile().getId(), 1);
         SessionRequest sessionRequest = laggView.apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
         if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
         	laggView.apiCache.update(sessionRequest);
         }
-        String realName = "";
-        if(playerRequest==null && sessionRequest!=null) {
-        	PlayerRequest realPlayer = sessionRequest.findByNick(name);
-        	if(realPlayer!=null && realPlayer.getName()!=null) {
-        		realName += EnumChatFormatting.LIGHT_PURPLE + " (" + realPlayer.getName() + ")";
-        		playerRequest = realPlayer;
-        	}
+
+        if(this.showRealNames && playerRequest!=null && playerRequest.getName()!=null && playersToReveal!=null && playersToReveal.contains(player.getGameProfile().getId())) {
+        	s1 = s1.replaceAll(player.getGameProfile().getName(), playerRequest.getName());
         }
-        s1 += realName;
+        
         String finalkdr = playerRequest==null?"?":playerRequest.getFinalKDRString();
         tabOverlay.getNamesInTab().put(player, s1);
         tabOverlay.getSuffixes().put(player, finalkdr);
