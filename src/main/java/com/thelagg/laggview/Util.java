@@ -11,9 +11,11 @@ import net.minecraft.util.IChatComponent;
 
 public class Util {
 	public static void print(String msg) {
+		if(Minecraft.getMinecraft().thePlayer==null) return;
 		Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(msg));
 	}
 	public static void print(IChatComponent msg) {
+		if(Minecraft.getMinecraft().thePlayer==null) return;
 		Minecraft.getMinecraft().thePlayer.addChatComponentMessage(msg);
 	}
 	

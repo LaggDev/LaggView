@@ -2,7 +2,11 @@ package com.thelagg.laggview;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -10,12 +14,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.security.auth.login.LoginException;
 import javax.swing.Timer;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.HudPropertyApi;
 import com.orangemarshall.hudproperty.IRenderer;
 import com.thelagg.laggview.hud.GameUpdater;
@@ -50,6 +56,7 @@ public class LaggView {
 	public Logger logger;
 	public Settings settings;
 	public HudPropertyApi hudProperty;
+	public DiscordListener discordListener;
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
@@ -69,6 +76,44 @@ public class LaggView {
         }).start();
         MinecraftForge.EVENT_BUS.register(gameUpdater = new GameUpdater(mc,this));
         this.hud = new Hud(this,mc);
+        new Thread(() -> loadDiscordListener()).start();
+	}
+	
+	public void loadDiscordListener() {
+		try {
+			File f = new File(System.getProperty("user.home") + "\\laggview\\discordtoken.txt");
+			if(f.exists()) setDiscordListener(new String(Files.readAllBytes(f.toPath())));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void setDiscordListener(String token) {
+		Util.print(ChatFormatting.GREEN + "Loading Discord Module");
+		try {	
+			discordListener = new DiscordListener(token,false);
+			Util.print(ChatFormatting.GREEN + "Discord module loaded succesfully");
+			File folder = new File(System.getProperty("user.home") + "\\laggview");
+			if(folder.exists() && folder.isFile()) folder.delete();
+			if(!folder.exists()) folder.mkdir();
+			File file = new File(folder.getPath() + "\\discordtoken.txt");
+			if(file.exists()) {
+				file.delete();
+			}
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    		try {
+				Files.write(file.toPath(), (token).getBytes(), StandardOpenOption.APPEND);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			Util.print(ChatFormatting.RED + "Error loading Discord module");
+		}
 	}
 	
 	public boolean hasMod(String modId) {

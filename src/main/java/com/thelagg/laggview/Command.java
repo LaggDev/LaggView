@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.security.auth.login.LoginException;
+
 import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.test.DelayedTask;
@@ -20,7 +22,11 @@ import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.event.ClickEvent;
+import net.minecraft.event.HoverEvent;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
@@ -75,7 +81,7 @@ public class Command extends CommandBase {
 		}
 		return list;
 	}
-
+	
 	@Override
 	public void processCommand(ICommandSender sender, final String[] args) throws CommandException {
 		if(args.length<1) {
@@ -83,6 +89,45 @@ public class Command extends CommandBase {
 			return;
 		}
 		switch(args[0]) {
+		case "discord":
+			if(args[1].equals("mute") && args.length>=3) {
+				if(laggView.discordListener!=null) {
+					try {
+						laggView.discordListener.muteChannel(Long.parseLong(args[2]));
+						ChatComponentText msg = new ChatComponentText(ChatFormatting.GREEN + "Muted channel " + Long.parseLong(args[2]));
+						msg.setChatStyle(new ChatStyle()
+								.setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,new ChatComponentText("Click to unmute " + args[2])))
+								.setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/lagg discord unmute " + args[2])));
+						Util.print(msg);
+					} catch (NumberFormatException e) {
+						e.printStackTrace();
+						Util.print(ChatFormatting.RED + "Error muting channel");
+					}
+				} else {
+					Util.print(ChatFormatting.RED + "Discord module not yet loaded!");
+				}
+			} else if (args[1].equals("start") && args.length>=3) {
+				new Thread() {
+					public void run() {
+						laggView.setDiscordListener(args[2]);
+					}
+				}.start();
+			} else if (args[1].equals("unmute") && args.length>=3) {
+				if(laggView.discordListener!=null) {
+					try {
+						laggView.discordListener.unMuteChannel(Long.parseLong(args[2]));
+						Util.print(ChatFormatting.GREEN + "Unmuted channel " + Long.parseLong(args[2]));
+					} catch (NumberFormatException e) {
+						e.printStackTrace();
+						Util.print(ChatFormatting.RED + "Error unmuting channel");
+					}
+				} else {
+					Util.print(ChatFormatting.RED + "Discord module not yet loaded!");
+				}
+			} else {
+				Util.print(ChatFormatting.RED + "Could not recognize that command.");
+			}
+			break;
 		case "hud":
 			new DelayedTask(() -> laggView.hudProperty.openConfigScreen(),1);
 			break;
