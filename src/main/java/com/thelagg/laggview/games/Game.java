@@ -1,4 +1,4 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.games;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -13,6 +13,9 @@ import java.util.regex.Pattern;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.HudPropertyApi;
 import com.orangemarshall.hudproperty.IRenderer;
+import com.thelagg.laggview.LaggView;
+import com.thelagg.laggview.TabOverlay;
+import com.thelagg.laggview.URLConnectionReader;
 import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
 
@@ -65,7 +68,8 @@ public class Game {
 		HIDE_AND_SEEK("HIDE AND SEEK"),
 		HYPIXEL_ZOMBIES("ZOMBIES"),
 		DUELS("DUELS"),
-		MAIN_LOBBY("HYPIXEL");
+		MAIN_LOBBY("HYPIXEL"),
+		LOBBY("LOBBY");
 		
 		private String nameOnScoreboard;
 		
@@ -250,6 +254,15 @@ public class Game {
 		if(bool) {
 			lastPartyMessage[0] = time;
 			lastPartyMessage[1] = m.group(1);
+		}
+	}
+	
+	protected void removeHudText(Priority p) {
+		for(int i = 0; i<this.hudText.size(); i++) {
+			HudText entry = this.hudText.get(i);
+			if(entry.getPriority()==p) {
+				this.hudText.remove(entry);
+			}
 		}
 	}
 	

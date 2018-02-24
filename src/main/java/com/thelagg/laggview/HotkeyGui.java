@@ -118,8 +118,8 @@ public class HotkeyGui extends JPanel implements KeyListener {
 	}
 	
 	public void updateKeyCombos() {
-		laggView.hackerMonitor.setStartRecordingHotkey(toggleOnHotkey);
-		laggView.hackerMonitor.setStopRecordingHotkey(toggleOffHotkey);
+		laggView.hackerRecorder.setStartRecordingHotkey(toggleOnHotkey);
+		laggView.hackerRecorder.setStopRecordingHotkey(toggleOffHotkey);
 		laggView.settings.setToggleRecordingOnHotkey(toggleOnHotkey);
 		laggView.settings.setToggleRecordingOffHotkey(toggleOffHotkey);
 	}

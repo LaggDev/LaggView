@@ -164,6 +164,11 @@ public class ApiCache {
 		r.processRequest();
 
 	}
+
+	public GuildRequest getCurrentGuild(UUID uuid, int priority) {
+		
+		return null;
+	}
 	
 }
 

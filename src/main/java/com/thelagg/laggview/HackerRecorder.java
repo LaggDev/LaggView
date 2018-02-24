@@ -5,6 +5,8 @@ import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Mouse;
@@ -18,6 +20,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.event.ClickEvent.Action;
 import net.minecraft.event.HoverEvent;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
@@ -25,7 +28,7 @@ import net.minecraft.util.IChatComponent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
-public class HackerMonitor {
+public class HackerRecorder {
 	private List<String> hackerList;
 	Minecraft mc;
 	ArrayList<EntityPlayer> hackersWithinRadius;
@@ -90,7 +93,7 @@ public class HackerMonitor {
 		}
 	}
 	
-	public HackerMonitor(Minecraft mcIn, LaggView laggView) {
+	public HackerRecorder(Minecraft mcIn, LaggView laggView) {
 		this.mc = mcIn;
 		this.hackersWithinRadius = new ArrayList<EntityPlayer>();
 		currentlyRecording = false;
@@ -101,9 +104,18 @@ public class HackerMonitor {
 		this.toggleRecording = laggView.settings.getToggleRecording();
 	}
 	
+	public boolean isSpectator() {
+		if(mc.thePlayer==null || mc.thePlayer.inventory==null) return false;
+		ItemStack item = mc.thePlayer.inventory.getStackInSlot(4);
+		if(item!=null && item.getDisplayName().contains("Spectator Settings")) {
+			return true;
+		}
+		return false;
+	}
+	
 	@SubscribeEvent
 	public void tick(ClientTickEvent event) {
-		if(mc.theWorld!=null && toggleRecording) {
+		if(mc.theWorld!=null && toggleRecording && !isSpectator()) {
 			List<Entity> entities = mc.theWorld.getLoadedEntityList();
 			EntityPlayerSP me = mc.thePlayer;
 			for(Entity e : entities) {
@@ -128,7 +140,49 @@ public class HackerMonitor {
 			} else {
 				stopRecording();
 			}
+		} else if(mc.theWorld!=null && toggleRecording) {
+			if(hackersWithinRadius.size()!=0) {
+				hackersWithinRadius = new ArrayList<EntityPlayer>();
+			}
+			List<Entity> entities = mc.theWorld.getLoadedEntityList();
+			boolean record = false;
+			flag:
+			for(Entity e : entities) {
+				if(e instanceof EntityPlayer) {
+					EntityPlayer p = (EntityPlayer)e;
+					if(hackerList.contains(p.getName().toLowerCase()) && p.getDistanceToEntity(mc.thePlayer)<radius) {
+						char colorA = getTeamColor(p);
+						System.out.println(colorA);
+						for(Entity f : entities) {
+							if(f instanceof EntityPlayer && p.getDistanceToEntity(f)<radius && ((EntityPlayer)f)!=mc.thePlayer) {
+								char colorB = getTeamColor((EntityPlayer)f);
+								System.out.println(f.getDisplayName().getFormattedText() + " " + colorB);
+								if(colorA!=colorB) {
+									record = true;
+									break flag;
+								}
+							}
+						}
+					}
+				}
+			}
+			if(record) {
+				startRecording();
+			} else {
+				stopRecording();
+			}
 		}
+	}
+	
+	private char getTeamColor(EntityPlayer p) {
+		String name = p.getDisplayName().getFormattedText();
+		Matcher m = Pattern.compile("\u00A7(.)").matcher(name);
+		while(m.find()) {
+			if(!m.group(1).equals("r")) {
+				return m.group(1).charAt(0);
+			}
+		}
+		return '?';
 	}
 	
 	private void startRecording() {

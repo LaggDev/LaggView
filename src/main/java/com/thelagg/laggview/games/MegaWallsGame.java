@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
-import com.thelagg.laggview.Game;
+import com.thelagg.laggview.GuiOverlay;
 import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.TabOverlay;
 import com.thelagg.laggview.URLConnectionReader;
@@ -26,8 +26,10 @@ import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
@@ -36,6 +38,7 @@ public class MegaWallsGame extends Game {
 
 	private Map<String,Integer> playerFinalKills = new HashMap<String,Integer>();
 	private int kills, assists, finalKills, finalAssists;
+	private long countdownStart;
 	
 	public MegaWallsGame(String serverId, Minecraft mc, LaggView laggView) {
 		super(GameType.MEGA_WALLS, serverId,mc, laggView);
@@ -48,7 +51,6 @@ public class MegaWallsGame extends Game {
 		this.updateHudText(new HudText(Priority.KILLS,ChatFormatting.LIGHT_PURPLE + "Kills: " + kills));
 		this.updateHudText(new HudText(Priority.ASSISTS,ChatFormatting.LIGHT_PURPLE + "Assists: " + assists));
 	}
-	
 	
 	public void printFinalKillsByTeam() {
 		new Thread() {
@@ -86,6 +88,15 @@ public class MegaWallsGame extends Game {
 	@Override
 	public void onTick(ClientTickEvent event) {
 		super.onTick(event);
+		if(countdownStart!=0) {
+			long time = System.currentTimeMillis();
+			if(time-countdownStart>30000) {
+				countdownStart = 0;
+				this.removeHudText(Priority.WITHER_TIMER);
+			} else {
+				this.updateHudText(new HudText(Priority.WITHER_TIMER,ChatFormatting.LIGHT_PURPLE + "Wither: " + (((double)(time-countdownStart))/1000.0)));
+			}
+		}
 	}
 	
 	public void onPotionAdded(PotionEffect potionEffect) {
@@ -97,6 +108,35 @@ public class MegaWallsGame extends Game {
 		super.onChat(event);
 		checkForMyKillsAndAssists(event.message.getFormattedText());
 		countFinals(event.message.getFormattedText());
+	}
+	
+	public void checkForWitherDeath(String msg) {
+		Matcher m = Pattern.compile("\u00A7r\u00A7eThe \u00A7r\u00A7.\\S+ Wither \u00A7r\u00A7ehas died!\u00A7r").matcher(msg);
+		if(m.find()) {
+			long time = System.currentTimeMillis();
+			new Thread() {
+				public void run() {
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					Minecraft mc = Minecraft.getMinecraft();
+					if(mc.ingameGUI instanceof GuiOverlay) {
+						List<String> lines = GuiOverlay.getSidebarScores(mc.theWorld.getScoreboard());
+						int notDead = 0;
+						for(String s : lines) {
+							if(s.replaceAll("\u00A7.", "").trim().matches("\\[.] \\S+ Wither: \\d+")) {
+								notDead++;
+							}
+						}
+						if(notDead==1) {
+							MegaWallsGame.this.countdownStart = time;
+						}
+					}
+				}
+			}.start();
+		}
 	}
 	
 	public void checkForMyKillsAndAssists(String msg) {
@@ -136,7 +176,7 @@ public class MegaWallsGame extends Game {
 	@Override
 	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
         String s1 = tabOverlay.getPlayerName(player);
-        
+        tabOverlay.setFooter(new ChatComponentText(ChatFormatting.GREEN + "Displaying " + ChatFormatting.RED + "Post-Update Final KDR" + ChatFormatting.GREEN + " in tab"));
         PlayerRequest playerRequest = laggView.apiCache.getPlayerResult(player.getGameProfile().getId(), 1);
         SessionRequest sessionRequest = laggView.apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
         if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
@@ -144,7 +184,8 @@ public class MegaWallsGame extends Game {
         }
 
         if(this.showRealNames && playerRequest!=null && playerRequest.getName()!=null && playersToReveal!=null && playersToReveal.contains(player.getGameProfile().getId())) {
-        	s1 = s1.replaceAll(player.getGameProfile().getName(), playerRequest.getName());
+        	tabOverlay.getSecondNames().put(player, s1.replaceAll("\u00A7.\\[.] ", "").replaceAll("\u00A77( |)\\[...]", ""));
+        	s1 = s1.replaceAll(player.getGameProfile().getName(), ChatFormatting.DARK_RED + playerRequest.getName());
         }
         
         String finalkdr = playerRequest==null?"?":playerRequest.getFinalKDRString();

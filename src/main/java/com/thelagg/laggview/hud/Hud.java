@@ -6,8 +6,8 @@ import java.util.Comparator;
 
 import com.orangemarshall.hudproperty.IRenderer;
 import com.orangemarshall.hudproperty.util.ScreenPosition;
-import com.thelagg.laggview.Game;
 import com.thelagg.laggview.LaggView;
+import com.thelagg.laggview.games.Game;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -27,7 +27,9 @@ public class Hud implements IRenderer {
 		FINAL_KILLS(1),
 		FINAL_ASSISTS(2),
 		KILLS(3),
-		ASSISTS(4);
+		ASSISTS(4), 
+		SOULS(5),
+		WITHER_TIMER(6);
 
 		public int value;
 		private Priority(int priority) {
@@ -41,6 +43,10 @@ public class Hud implements IRenderer {
 		
 		public boolean samePriority(HudText t) {
 			return t.priority == this.priority;
+		}
+		
+		public Priority getPriority() {
+			return priority;
 		}
 		
 		public HudText(Priority priority,String msg) {

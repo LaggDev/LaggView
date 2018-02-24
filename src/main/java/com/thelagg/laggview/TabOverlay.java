@@ -9,6 +9,7 @@ import java.util.Map;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.mojang.authlib.GameProfile;
+import com.thelagg.laggview.games.Game;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -44,8 +45,13 @@ public class TabOverlay extends GuiPlayerTabOverlay {
     private boolean isBeingRendered;
     private Map<NetworkPlayerInfo,String> suffixes;
     private Map<NetworkPlayerInfo,String> nameInTab;
+    private Map<NetworkPlayerInfo,String> secondNames;
     private LaggView laggView;
     public NetworkPlayerInfo[] currentlyDisplayedPlayers = {};
+    
+    public Map<NetworkPlayerInfo,String> getSecondNames() {
+    	return this.secondNames;
+    }
     
     public static void ReplaceTabOverlay(LaggView laggView,GuiOverlay guiOverlay) {
     	Field f = null;
@@ -73,6 +79,7 @@ public class TabOverlay extends GuiPlayerTabOverlay {
         this.guiIngame = guiIngameIn;
         suffixes = new HashMap<NetworkPlayerInfo,String>();
         nameInTab = new HashMap<NetworkPlayerInfo,String>();
+        secondNames = new HashMap<NetworkPlayerInfo,String>();
         this.laggView = laggView;
     }
     
@@ -138,6 +145,20 @@ public class TabOverlay extends GuiPlayerTabOverlay {
     	} catch (NullPointerException e) {
     		return new NetworkPlayerInfo[] {};
     	}
+    }
+    
+    public void drawTextSmallerCenteredY(String s, double x, double y, double width) {
+    	double distance = width;
+    	double actualDistance = mc.fontRendererObj.getStringWidth(s);
+    	double scaleFraction = Math.min(distance/actualDistance,1.0);
+    	double redoScale = 1.0/scaleFraction;
+    	y -= ((double)mc.fontRendererObj.FONT_HEIGHT)*scaleFraction/2.0;
+    	GlStateManager.pushMatrix();
+    	GlStateManager.scale(scaleFraction, scaleFraction, 1.0);
+    	x *= redoScale;
+    	y *= redoScale;
+    	mc.fontRendererObj.drawStringWithShadow(s, (int)x, (int)y, -1);
+    	GlStateManager.popMatrix();
     }
     
     /**
@@ -273,7 +294,7 @@ public class TabOverlay extends GuiPlayerTabOverlay {
 
                     j2 += 9;
                 }
-
+                
                 if (networkplayerinfo1.getGameType() == WorldSettings.GameType.SPECTATOR)
                 {
                     s1 = EnumChatFormatting.ITALIC + s1;
@@ -281,7 +302,21 @@ public class TabOverlay extends GuiPlayerTabOverlay {
                 }
                 else
                 {
-                    this.mc.fontRendererObj.drawStringWithShadow(s1, (float)j2, (float)k2, -1);
+                	double strLength = mc.fontRendererObj.getStringWidth(s1);
+                	double properLength = (this.secondNames.containsKey(networkplayerinfo1)?0.67:1.0)*((double)(j2 - (flag?9:0) + i1 - 11-j2));
+                	if(properLength>=strLength) {
+                		this.mc.fontRendererObj.drawStringWithShadow(s1, (float)j2, (float)k2, -1);
+                	} else {
+                		this.drawTextSmallerCenteredY(s1, j2, ((double)k2) + ((double)mc.fontRendererObj.FONT_HEIGHT)/2.0, properLength);
+                	}
+                	
+                    if(this.secondNames.containsKey(networkplayerinfo1)) {
+                    	String secondName = this.secondNames.get(networkplayerinfo1);
+                    	double x = j2 + (properLength>=strLength?strLength:properLength);
+                    	double y = ((double)k2) + ((double)mc.fontRendererObj.FONT_HEIGHT)/2.0;
+                    	double distance = j2 - (flag?9:0) + i1 - 11 - x;
+                    	this.drawTextSmallerCenteredY(secondName, x, y, distance);
+                    }
                 }
 
                 if (scoreObjectiveIn != null && networkplayerinfo1.getGameType() != WorldSettings.GameType.SPECTATOR)

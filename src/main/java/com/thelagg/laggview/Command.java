@@ -14,6 +14,7 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.test.DelayedTask;
 import com.thelagg.laggview.apirequests.NameHistoryRequest;
 import com.thelagg.laggview.apirequests.NameToUUIDRequest;
+import com.thelagg.laggview.games.Game;
 import com.thelagg.laggview.games.MegaWallsGame;
 
 import net.minecraft.client.Minecraft;
@@ -22,12 +23,15 @@ import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.event.HoverEvent;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.eventhandler.IEventListener;
@@ -55,31 +59,20 @@ public class Command extends CommandBase {
 	@Override
 	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
 		if(args.length<=1) {
-			return getListOfStringsMatchingLastWord(args, "name","record","hud","hotkeys","parties","finals","stats");
+			return getListOfStringsMatchingLastWord(args, "name","record","hud","hotkeys","parties","finals","stats","discord","session");
 		}
 		switch(args[0]) {
 		case "record":
-			List<String> modifiedList = getPlayerNamesInTab();
+			List<String> modifiedList = Util.getPlayerNamesInTab();
 			modifiedList.add(0, "toggle");
 			modifiedList.add(0,"list");
 			return getListOfStringsMatchingLastWord(args,modifiedList);
 		case "name":
 		case "stats":
-			return getListOfStringsMatchingLastWord(args,this.getPlayerNamesInTab());
+			return getListOfStringsMatchingLastWord(args,Util.getPlayerNamesInTab());
 		default:
 			return Lists.newArrayList();
 		}
-	}
-	
-	public List<String> getPlayerNamesInTab() {
-		List<String> list = new ArrayList<String>();
-		if(Minecraft.getMinecraft().ingameGUI.getTabList() instanceof TabOverlay) {
-			TabOverlay tab = (TabOverlay)Minecraft.getMinecraft().ingameGUI.getTabList();
-			for(NetworkPlayerInfo i : tab.getCurrentlyDisplayedPlayers()) {
-				list.add(i.getGameProfile().getName());
-			}
-		}
-		return list;
 	}
 	
 	@Override
@@ -106,12 +99,6 @@ public class Command extends CommandBase {
 				} else {
 					Util.print(ChatFormatting.RED + "Discord module not yet loaded!");
 				}
-			} else if (args[1].equals("start") && args.length>=3) {
-				new Thread() {
-					public void run() {
-						laggView.setDiscordListener(args[2]);
-					}
-				}.start();
 			} else if (args[1].equals("unmute") && args.length>=3) {
 				if(laggView.discordListener!=null) {
 					try {
@@ -124,6 +111,8 @@ public class Command extends CommandBase {
 				} else {
 					Util.print(ChatFormatting.RED + "Discord module not yet loaded!");
 				}
+			} else if (args.length==1) {
+				
 			} else {
 				Util.print(ChatFormatting.RED + "Could not recognize that command.");
 			}
@@ -132,7 +121,7 @@ public class Command extends CommandBase {
 			new DelayedTask(() -> laggView.hudProperty.openConfigScreen(),1);
 			break;
 		case "hotkeys":
-			new HotkeyGui(laggView.hackerMonitor.getStartRecordingHotkey(),laggView.hackerMonitor.getStopRecordingHotkey(),laggView);
+			new HotkeyGui(laggView.hackerRecorder.getStartRecordingHotkey(),laggView.hackerRecorder.getStopRecordingHotkey(),laggView);
 			break;
 		case "test":
 			GuiPlayerTabOverlay tab1 = Minecraft.getMinecraft().ingameGUI.getTabList();
@@ -151,6 +140,12 @@ public class Command extends CommandBase {
 							}
 						}
 						Util.print(s);
+						for(Entity e : Minecraft.getMinecraft().theWorld.getLoadedEntityList()) {
+							if(e.getName().equals(args[1])) {
+								Util.print(e.getDisplayName());
+								break;
+							}
+						}
 					}
 				}
 			}
@@ -160,6 +155,7 @@ public class Command extends CommandBase {
 			String msg = ChatFormatting.GREEN + "{";
 			int i = 0;
 			for(ArrayList<String> party : g.getParties()) {
+				if(i==0) i++;
 				msg += ChatFormatting.values()[i] + Arrays.toString(party.toArray(new String[party.size()]));
 				i = (i+1)%16;
 			}
@@ -178,21 +174,21 @@ public class Command extends CommandBase {
 		case "record":
 				switch(args[1]) {
 				case "toggle":
-					laggView.hackerMonitor.toggleRecording();
+					laggView.hackerRecorder.toggleRecording();
 					break;
 				case "list":
-					laggView.hackerMonitor.printList();
+					laggView.hackerRecorder.printList();
 					break;
 				case "remove":
 					if(args.length==3) {
-						laggView.hackerMonitor.remove(args[2]);
+						laggView.hackerRecorder.remove(args[2]);
 					} else {
 						Util.print(ChatFormatting.DARK_RED + "Please specify the player");
 					}
 				break;
 				default:
 					if(args.length==2) {
-						laggView.hackerMonitor.addOrRemove(args[1]);
+						laggView.hackerRecorder.addOrRemove(args[1]);
 					} else {
 						Util.print("Couldn't recognize that command, sorry :/");
 					}
@@ -203,8 +199,15 @@ public class Command extends CommandBase {
 			if(args.length<2) {
 				Util.print("/lagg stats <player>");
 			} else {
-				Util.print(EnumChatFormatting.GOLD + "thelagg.com/hypixel/player/" + args[1]);
+				IChatComponent text = ForgeHooks.newChatWithLinks("thelagg.com/hypixel/player/" + args[1]);
+				text.setChatStyle(text.getChatStyle().setColor(EnumChatFormatting.GOLD));
+				Util.print(text);
 			}
+			break;
+		case "session":
+			IChatComponent text = ForgeHooks.newChatWithLinks("thelagg.com/hypixel/session/" + sender.getName());
+			text.setChatStyle(text.getChatStyle().setColor(EnumChatFormatting.GOLD));
+			Util.print(text);
 			break;
 		case "name":
 			if(args.length<2) {

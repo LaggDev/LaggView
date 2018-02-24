@@ -1,8 +1,11 @@
 package com.thelagg.laggview.apirequests;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -63,6 +66,17 @@ public class GuildRequest extends ApiRequest {
 			}
 		}
 		return false;
+	}
+
+	public List<UUID> getUUIDs() {
+		JSONArray arr = (JSONArray) this.getObjectAtPath("guild/members");
+		List<UUID> uuids = new ArrayList<UUID>();
+		for(Object o : arr) {
+			JSONObject jsonObj = (JSONObject)o;
+			UUID uuid = UUID.fromString((String) jsonObj.get("uuid"));
+			uuids.add(uuid);
+		}
+		return uuids;
 	}
 
 }

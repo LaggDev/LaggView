@@ -6,10 +6,15 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Level;
 
-import com.thelagg.laggview.Game;
-import com.thelagg.laggview.Game.GameType;
+import com.ibm.icu.impl.duration.impl.Utils;
+import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.LaggView;
+import com.thelagg.laggview.Util;
+import com.thelagg.laggview.games.Game;
+import com.thelagg.laggview.games.Lobby;
 import com.thelagg.laggview.games.MegaWallsGame;
+import com.thelagg.laggview.games.SkywarsGame;
+import com.thelagg.laggview.games.Game.GameType;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.scoreboard.ScoreObjective;
@@ -97,7 +102,14 @@ public class GameUpdater {
 								waitingForServerId = false;
 								currentGame = null;
 							} else if (id.toLowerCase().contains("lobby") || id.equals("limbo")) {
-								
+								Game alreadyExisted = findGame(Game.GameType.LOBBY,id);
+								if(alreadyExisted==null) {
+									currentGame = createGame(Game.GameType.LOBBY,id);
+									allGames.add(currentGame);
+								} else {
+									alreadyExisted.enter();
+									currentGame = alreadyExisted;
+								}
 							} else {
 								Game alreadyExisted = findGame(type,id);
 								if(alreadyExisted==null) {
@@ -125,6 +137,10 @@ public class GameUpdater {
 		switch(type) {
 		case MEGA_WALLS:
 			return new MegaWallsGame(id,mc,laggView);
+		case LOBBY:
+			return new Lobby(id,mc,laggView);
+		case SKYWARS:
+			return new SkywarsGame(id,mc,laggView);
 		default:
 			return new Game(type,id,mc,laggView);
 		}

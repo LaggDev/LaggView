@@ -45,10 +45,11 @@ public class PlayerRequest extends ApiRequest {
 	public double getFinalKDR() {
 		try {
 			Long final_kills = (Long) getObjectAtPath("player/stats/Walls3/final_kills");
-			Long finalDeaths = (Long)getObjectAtPath("player/stats/Walls3/finalDeaths");
+			Long finalKills = (Long) getObjectAtPath("player/stats/Walls3/finalKills");
+			//Long finalDeaths = (Long)getObjectAtPath("player/stats/Walls3/finalDeaths");
 			Long final_deaths = (Long)getObjectAtPath("player/stats/Walls3/final_deaths");
-			double finalKillsTotal = final_kills==null?0:final_kills;
-			double finalDeathsTotal = (finalDeaths==null?0:finalDeaths) + (final_deaths==null?0:final_deaths);
+			double finalKillsTotal = (final_kills==null?0:final_kills) - (finalKills==null?0:finalKills);
+			double finalDeathsTotal = (final_deaths==null?0:final_deaths);
 			if(finalDeathsTotal==0) {
 				return 0;
 			}
@@ -70,5 +71,58 @@ public class PlayerRequest extends ApiRequest {
 	public String getName() {
 		return (String)getObjectAtPath("player/displayname");
 	}
+
+	public double getSkywarsKDR() {
+		try {
+			Long kills = (Long) getObjectAtPath("player/stats/SkyWars/kills");
+			Long deaths = (Long)getObjectAtPath("player/stats/SkyWars/deaths");
+			double killsTotal = kills;
+			double deathsTotal = deaths;
+			if(deathsTotal==0) {
+				return 0;
+			}
+			return killsTotal/deathsTotal;
+		} catch (NullPointerException | ClassCastException e) {
+			return 0;
+		}
+	}
+	
+	public double getBedwarsLevel() {
+		try {
+			Long experience = (Long) getObjectAtPath("player/stats/Bedwars/Experience");
+			return getBedwarsLevel(experience);
+		} catch (NullPointerException | ClassCastException e) {
+			return 0;
+		}
+	}
+	
+	public String getBedwarsLevelStr() {
+		double level = this.getBedwarsLevel();
+		DecimalFormat df = new DecimalFormat("0.0");
+		return EnumChatFormatting.GOLD + df.format(level);
+	}
+	
+	public String getSkywarsKDRStr() {
+		double kdr = this.getSkywarsKDR();
+		DecimalFormat df = new DecimalFormat("0.0");
+		return EnumChatFormatting.GOLD + df.format(kdr);
+	}
+	
+    public static double getBedwarsLevel(long experience) {
+        // first few levels are different
+        if (experience < 500) {
+            return 0;
+        } else if (experience < 1500) {
+            return 1;
+        } else if (experience < 3500) {
+            return 2;
+        } else if (experience < 5500) {
+            return 3;
+        } else if (experience < 9000) {
+            return 4;
+        }
+        experience -= 9000;
+        return experience / 5000 + 4;
+    }
 	
 }

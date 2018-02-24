@@ -24,20 +24,24 @@ import org.apache.logging.log4j.Logger;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.HudPropertyApi;
 import com.orangemarshall.hudproperty.IRenderer;
+import com.thelagg.laggview.commands.TeamInvite;
 import com.thelagg.laggview.hud.GameUpdater;
 import com.thelagg.laggview.hud.Hud;
 import com.thelagg.laggview.settings.Settings;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.eventhandler.IEventListener;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -47,7 +51,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 public class LaggView {
 	public static final String MODID = "laggview";
 	Minecraft mc;
-	public HackerMonitor hackerMonitor;
+	public HackerRecorder hackerRecorder;
+	public GuildMonitor hackerMonitor;
 	public ApiCache apiCache;
 	public static LaggView instance;
 	private long lastLogin;
@@ -57,6 +62,8 @@ public class LaggView {
 	public Settings settings;
 	public HudPropertyApi hudProperty;
 	public DiscordListener discordListener;
+	private boolean warnedAboutIncompatibility = false;
+	private String[] incompatibleMods = new String[] {"sidebarmod","oldanimations"};
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
@@ -67,8 +74,10 @@ public class LaggView {
 		mc = Minecraft.getMinecraft();
 		apiCache = new ApiCache();
 		MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(hackerMonitor = new HackerMonitor(mc,this));
+        MinecraftForge.EVENT_BUS.register(hackerRecorder = new HackerRecorder(mc,this));
+        MinecraftForge.EVENT_BUS.register(hackerMonitor = new GuildMonitor(mc,this));
         ClientCommandHandler.instance.registerCommand(new Command(this));
+        ClientCommandHandler.instance.registerCommand(new TeamInvite());
         new Timer(10,new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				apiCache.processFirstRequest();
@@ -77,6 +86,11 @@ public class LaggView {
         MinecraftForge.EVENT_BUS.register(gameUpdater = new GameUpdater(mc,this));
         this.hud = new Hud(this,mc);
         new Thread(() -> loadDiscordListener()).start();
+        try {
+			incompatibleMods = URLConnectionReader.getText("http://thelagg.com/hypixel/incompatiblemods").split(",");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void loadDiscordListener() {
@@ -154,8 +168,23 @@ public class LaggView {
 				e.printStackTrace();
 			}
 		}
-		if(hasMod("sidebarmod")) {
-			throw new IncompatibleModException("sidebarmod");
+	}
+	
+	public void warnIncompatibleMods() {
+		if(this.warnedAboutIncompatibility || mc.theWorld==null || mc.thePlayer==null) {
+			return;
+		}
+		for(String s : this.incompatibleMods) {
+			this.warnIncompatibleMod(s);
+		}
+		this.warnedAboutIncompatibility = true;
+	}
+	
+	public void warnIncompatibleMod(String modId) {
+		if(hasMod(modId)) {
+			for(int i = 0; i<5; i++) {
+				Util.print(ChatFormatting.DARK_RED + "Lagg View is known to have problems when used alongisde "+ ChatFormatting.RED + modId + ChatFormatting.DARK_RED + " mod. It is recommended you remove this mod for full functionality.");
+			}
 		}
 	}
 	
@@ -165,7 +194,7 @@ public class LaggView {
 	
 	@SubscribeEvent
 	public void onTick(ClientTickEvent event) {
-		
+		warnIncompatibleMods();
 		if(mc.thePlayer!=null && mc.thePlayer.sendQueue!=null && !(mc.thePlayer.sendQueue instanceof MyPacketHandler)) {
 			MyPacketHandler.replacePacketHandler();
 		}
@@ -177,6 +206,9 @@ public class LaggView {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+		if(!(mc.ingameGUI.getTabList() instanceof TabOverlay) && mc.ingameGUI instanceof GuiOverlay) {
+			TabOverlay.ReplaceTabOverlay(this, (GuiOverlay)mc.ingameGUI);
 		}
 	}
 	

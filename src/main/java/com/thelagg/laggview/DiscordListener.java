@@ -40,6 +40,7 @@ import net.minecraft.event.HoverEvent.Action;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.IChatComponent;
+import net.minecraftforge.common.ForgeHooks;
 import scala.actors.threadpool.Arrays;
 
 public class DiscordListener extends ListenerAdapter
@@ -69,10 +70,12 @@ public class DiscordListener extends ListenerAdapter
     	}
     	
         if (event.isFromType(ChannelType.TEXT)) {
+        	long guildId = event.getGuild().getIdLong();
+        	if(mutedChannelIds.contains(guildId)) return;
         	String guildName = event.getGuild().getName();
         	String channelName = event.getChannel().getName();
         	String author = event.getAuthor().getName();
-        	String content = event.getMessage().getContentStripped();
+        	IChatComponent content = ForgeHooks.newChatWithLinks(event.getMessage().getContentStripped());
         	long id = event.getChannel().getIdLong();
         	if(mutedChannelIds.contains(id)) return;
         	this.idToName.put(id,getChannelConfigName(event));
@@ -80,13 +83,13 @@ public class DiscordListener extends ListenerAdapter
         	ChatStyle style = new ChatStyle().setChatHoverEvent(new HoverEvent(Action.SHOW_TEXT, new ChatComponentText("Click to mute " + id)));
         	style.setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lagg discord mute " + id));
         	firstMsg.setChatStyle(style);
-        	ChatComponentText secondMsg = new ChatComponentText(" " + ChatFormatting.AQUA + author + ": " + ChatFormatting.WHITE + content);
+        	IChatComponent secondMsg = new ChatComponentText(" " + ChatFormatting.AQUA + author + ": " + ChatFormatting.WHITE).appendSibling(content);
         	IChatComponent msg = firstMsg.appendSibling(secondMsg);
         	secondMsg.getChatStyle().setParentStyle(null);
         	Util.print(msg);
         } else if (event.isFromType(ChannelType.PRIVATE)) {
         	String author = event.getAuthor().getName();
-        	String content = event.getMessage().getContentStripped();
+        	IChatComponent content = ForgeHooks.newChatWithLinks(event.getMessage().getContentStripped());
         	long id = event.getAuthor().getIdLong();
         	if(mutedChannelIds.contains(id)) return;
         	this.idToName.put(id,getChannelConfigName(event));
@@ -94,13 +97,13 @@ public class DiscordListener extends ListenerAdapter
         	ChatStyle style = new ChatStyle().setChatHoverEvent(new HoverEvent(Action.SHOW_TEXT, new ChatComponentText("Click to mute " + id)));
         	style.setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lagg discord mute " + id));
         	firstMsg.setChatStyle(style);
-        	ChatComponentText secondMsg = new ChatComponentText(" " + ChatFormatting.AQUA + author + ": " + content);
+        	IChatComponent secondMsg = new ChatComponentText(" " + ChatFormatting.AQUA + author + ": ").appendSibling(content);
         	IChatComponent msg = firstMsg.appendSibling(secondMsg);
         	secondMsg.getChatStyle().setParentStyle(null);
             Util.print(msg);
         } else if (event.isFromType(ChannelType.GROUP)) {
         	String author = event.getAuthor().getName();
-        	String content = event.getMessage().getContentStripped();
+        	IChatComponent content = ForgeHooks.newChatWithLinks(event.getMessage().getContentStripped());
         	String groupName = event.getGroup().getName();
         	if(groupName==null) groupName = "Unnamed";
         	long id = event.getGroup().getIdLong();
@@ -110,7 +113,7 @@ public class DiscordListener extends ListenerAdapter
         	ChatStyle style = new ChatStyle().setChatHoverEvent(new HoverEvent(Action.SHOW_TEXT, new ChatComponentText("Click to mute " + id)));
         	style.setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lagg discord mute " + id));
         	firstMsg.setChatStyle(style);
-        	ChatComponentText secondMsg = new ChatComponentText(" " + ChatFormatting.AQUA + author + ": " + ChatFormatting.WHITE + content);
+        	IChatComponent secondMsg = new ChatComponentText(" " + ChatFormatting.AQUA + author + ": " + ChatFormatting.WHITE).appendSibling(content);
         	IChatComponent msg = firstMsg.appendSibling(secondMsg);
         	secondMsg.getChatStyle().setParentStyle(null);
             Util.print(msg);
@@ -168,7 +171,7 @@ public class DiscordListener extends ListenerAdapter
 			String line;
 			ArrayList<Long> channels = new ArrayList<Long>();
 			while((line=in.readLine())!=null) {
-				Matcher m = Pattern.compile("(\\d+) ").matcher(line);
+				Matcher m = Pattern.compile("(\\d+)(\\s|$)").matcher(line);
 				if(m.find()) {
 					try {
 						long l = Long.parseLong(m.group(1));

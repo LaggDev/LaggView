@@ -1,9 +1,12 @@
 package com.thelagg.laggview;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Predicate;
@@ -160,28 +163,27 @@ public class GuiOverlay extends GuiIngameForge {
                 drawRect(l1 - 2, k - 1, l, k, 1342177280);
                 this.getFontRenderer().drawString(s3, l1 + i / 2 - this.getFontRenderer().getStringWidth(s3) / 2, k - this.getFontRenderer().FONT_HEIGHT, 553648127);
             }
-            
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             GlStateManager.enableAlpha();
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-
             if(s1.contains("\u00A7a")) {
-            	String name = s1.replaceAll("\u00A7a", "");
-            	NetworkPlayerInfo player = getNetworkPlayerInfo(tabList,name);
-            	if(player!=null) {
-	        		EntityPlayer entityplayer = this.mc.theWorld.getPlayerEntityByUUID(player.getGameProfile().getId());
-	                this.mc.getTextureManager().bindTexture(player.getLocationSkin());
-	                Gui.drawScaledCustomSizeModalRect(l1 + this.getFontRenderer().getStringWidth(s1) + 2, k, 8.0F, 8, 8, 8, 8, 8, 64.0F, 64.0F);
-	                if (entityplayer != null && entityplayer.isWearing(EnumPlayerModelParts.HAT))
-	                {
-	                    Gui.drawScaledCustomSizeModalRect(l1 + this.getFontRenderer().getStringWidth(s1) + 2, k, 40.0F, 8, 8, 8, 8, 8, 64.0F, 64.0F);
-	                }
+            	Matcher m = Pattern.compile("\u00A7a([a-zA-Z_]+)[^\\x00-\\x7F]*([a-zA-Z_]*)").matcher(s1);
+            	if(m.find()) {
+	            	String name = m.group(1) + m.group(2);
+	            	NetworkPlayerInfo player = getNetworkPlayerInfo(tabList,name);
+	            	if(player!=null) {
+		        		EntityPlayer entityplayer = this.mc.theWorld.getPlayerEntityByUUID(player.getGameProfile().getId());
+		                this.mc.getTextureManager().bindTexture(player.getLocationSkin());
+		                Gui.drawScaledCustomSizeModalRect(l1 + this.getFontRenderer().getStringWidth(s1) + 2, k, 8.0F, 8, 8, 8, 8, 8, 64.0F, 64.0F);
+		                if (entityplayer != null && entityplayer.isWearing(EnumPlayerModelParts.HAT))
+		                {
+		                    Gui.drawScaledCustomSizeModalRect(l1 + this.getFontRenderer().getStringWidth(s1) + 2, k, 40.0F, 8, 8, 8, 8, 8, 64.0F, 64.0F);
+		                }
+	            	}
             	}
             }
         }
     }
-
-
     
 }
