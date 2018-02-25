@@ -34,7 +34,13 @@ public class PlayerRequest extends ApiRequest {
 		this.apiCache.requestQueue.remove(this);
 	}
 
+	public String getWarlordsWLRStr() {
+		return this.format(getWarlordsWLR());
+	}
 	
+	public double getWarlordsWLR() {
+		return this.getKDRorWLR("player/stats/Battleground/wins", "player/stats/Battleground/losses");
+	}
 	
 	public String getTNTRunWinsStr() {
 		return noDecimal(this.getTNTRunWins());
