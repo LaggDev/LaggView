@@ -1,4 +1,4 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.hud;
 
 import java.lang.reflect.Field;
 import java.util.Comparator;
@@ -9,6 +9,7 @@ import java.util.Map;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.mojang.authlib.GameProfile;
+import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.games.Game;
 
 import net.minecraft.client.Minecraft;
@@ -167,6 +168,9 @@ public class TabOverlay extends GuiPlayerTabOverlay {
     @Override
     public void renderPlayerlist(int width, Scoreboard scoreboardIn, ScoreObjective scoreObjectiveIn)
     {
+    	this.nameInTab = new HashMap<NetworkPlayerInfo,String>();
+    	this.secondNames = new HashMap<NetworkPlayerInfo,String>();
+    	this.suffixes = new HashMap<NetworkPlayerInfo,String>();
     	NetHandlerPlayClient nethandlerplayclient = this.mc.thePlayer.sendQueue;
         List<NetworkPlayerInfo> list = field_175252_a.<NetworkPlayerInfo>sortedCopy(nethandlerplayclient.getPlayerInfoMap());
         int i = 0;
@@ -272,7 +276,7 @@ public class TabOverlay extends GuiPlayerTabOverlay {
             {
                 NetworkPlayerInfo networkplayerinfo1 = (NetworkPlayerInfo)list.get(k4);
                 
-                processPlayer(networkplayerinfo1);               
+                this.processPlayer(networkplayerinfo1);               
                 String s1 = this.nameInTab.get(networkplayerinfo1);
                 GameProfile gameprofile = networkplayerinfo1.getGameProfile();
                 

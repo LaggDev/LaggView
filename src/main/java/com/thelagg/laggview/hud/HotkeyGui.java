@@ -1,4 +1,4 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.hud;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -12,6 +12,8 @@ import java.awt.event.KeyListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import com.thelagg.laggview.LaggView;
 
 public class HotkeyGui extends JPanel implements KeyListener {
 	private static final long serialVersionUID = -4503747634363844880L;

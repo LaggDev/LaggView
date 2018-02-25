@@ -1,4 +1,4 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.hud;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +13,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
+import com.thelagg.laggview.LaggView;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -168,7 +169,7 @@ public class GuiOverlay extends GuiIngameForge {
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
             if(s1.contains("\u00A7a")) {
-            	Matcher m = Pattern.compile("\u00A7a([a-zA-Z_]+)[^\\x00-\\x7F]*([a-zA-Z_]*)").matcher(s1);
+            	Matcher m = Pattern.compile("\u00A7a([a-zA-Z0-9_]+)[^\\x00-\\x7F]*([a-zA-Z0-9_]*)").matcher(s1);
             	if(m.find()) {
 	            	String name = m.group(1) + m.group(2);
 	            	NetworkPlayerInfo player = getNetworkPlayerInfo(tabList,name);

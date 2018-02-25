@@ -15,13 +15,13 @@ import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
-import com.thelagg.laggview.GuiOverlay;
 import com.thelagg.laggview.LaggView;
-import com.thelagg.laggview.TabOverlay;
 import com.thelagg.laggview.URLConnectionReader;
 import com.thelagg.laggview.Util;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
+import com.thelagg.laggview.hud.GuiOverlay;
+import com.thelagg.laggview.hud.TabOverlay;
 import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
 
@@ -184,7 +184,9 @@ public class MegaWallsGame extends Game {
         }
 
         if(this.showRealNames && playerRequest!=null && playerRequest.getName()!=null && playersToReveal!=null && playersToReveal.contains(player.getGameProfile().getId())) {
-        	tabOverlay.getSecondNames().put(player, s1.replaceAll("\u00A7.\\[.] ", "").replaceAll("\u00A77( |)\\[...]", ""));
+        	if(!s1.contains(playerRequest.getName())) {
+        		tabOverlay.getSecondNames().put(player, s1.replaceAll("\u00A7.\\[.] ", "").replaceAll("\u00A77( |)\\[...]", ""));
+        	}
         	s1 = s1.replaceAll(player.getGameProfile().getName(), ChatFormatting.DARK_RED + playerRequest.getName());
         }
         

@@ -116,9 +116,14 @@ public class MyPacketHandler extends NetHandlerPlayClient {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void addToSendQueue(Packet p) {
-		if(p instanceof C01PacketChatMessage  && Pattern.compile("(^|\\s)L($|\\s)").matcher(((C01PacketChatMessage) p).getMessage()).find()) {
-			Util.print(ChatFormatting.DARK_RED + "Please respect all users.");
-			return;
+		if(p instanceof C01PacketChatMessage) {
+			String msg = ((C01PacketChatMessage) p).getMessage();
+			if(Pattern.compile("(^|\\s)L($|\\s)").matcher(msg).find()) {
+				Util.print(ChatFormatting.DARK_RED + "Please respect all users.");
+			} else {
+				super.addToSendQueue(p);
+			}
+			
 		} else {
 			super.addToSendQueue(p);
 		}

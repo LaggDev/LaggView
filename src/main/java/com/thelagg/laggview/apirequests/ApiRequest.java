@@ -1,4 +1,4 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.apirequests;
 
 import org.json.simple.JSONObject;
 

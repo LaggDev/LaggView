@@ -10,9 +10,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import com.thelagg.laggview.ApiCache;
-import com.thelagg.laggview.ApiRequest;
 import com.thelagg.laggview.URLConnectionReader;
+import com.thelagg.laggview.Util;
 
 public class GuildRequest extends ApiRequest {
 
@@ -35,7 +34,7 @@ public class GuildRequest extends ApiRequest {
 		if(this.uuid!=null) {
 			try {
 				JSONParser parser = new JSONParser();
-				json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/hypixel/raw/guild/byUUID/" + this.uuid));
+				json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/hypixel/raw/guild/player/" + this.uuid));
 			} catch (ParseException | IOException e) {
 				e.printStackTrace();
 			}
@@ -45,7 +44,7 @@ public class GuildRequest extends ApiRequest {
 		} else {
 			try {
 				JSONParser parser = new JSONParser();
-				json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/hypixel/raw/guild/byName/" + this.name));
+				json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/hypixel/raw/guild/" + this.name));
 			} catch (ParseException | IOException e) {
 				e.printStackTrace();
 			}
@@ -70,10 +69,11 @@ public class GuildRequest extends ApiRequest {
 
 	public List<UUID> getUUIDs() {
 		JSONArray arr = (JSONArray) this.getObjectAtPath("guild/members");
+		System.out.println(arr.size());
 		List<UUID> uuids = new ArrayList<UUID>();
 		for(Object o : arr) {
 			JSONObject jsonObj = (JSONObject)o;
-			UUID uuid = UUID.fromString((String) jsonObj.get("uuid"));
+			UUID uuid = Util.getUUID((String) jsonObj.get("uuid"));
 			uuids.add(uuid);
 		}
 		return uuids;

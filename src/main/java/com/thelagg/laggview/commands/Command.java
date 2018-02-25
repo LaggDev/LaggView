@@ -1,10 +1,11 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.commands;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.security.auth.login.LoginException;
@@ -12,10 +13,16 @@ import javax.security.auth.login.LoginException;
 import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.test.DelayedTask;
+import com.thelagg.laggview.LaggView;
+import com.thelagg.laggview.MyPacketHandler;
+import com.thelagg.laggview.Util;
+import com.thelagg.laggview.apirequests.GuildRequest;
 import com.thelagg.laggview.apirequests.NameHistoryRequest;
 import com.thelagg.laggview.apirequests.NameToUUIDRequest;
 import com.thelagg.laggview.games.Game;
 import com.thelagg.laggview.games.MegaWallsGame;
+import com.thelagg.laggview.hud.HotkeyGui;
+import com.thelagg.laggview.hud.TabOverlay;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
@@ -124,7 +131,15 @@ public class Command extends CommandBase {
 			new HotkeyGui(laggView.hackerRecorder.getStartRecordingHotkey(),laggView.hackerRecorder.getStopRecordingHotkey(),laggView);
 			break;
 		case "test":
-			GuiPlayerTabOverlay tab1 = Minecraft.getMinecraft().ingameGUI.getTabList();
+			new Thread() {
+				public void run() {
+					GuildRequest r = laggView.apiCache.getGuildResult(UUID.fromString(args[1]), 0);
+					Util.print(Boolean.toString(r==null));
+					Util.print(Arrays.toString(r.getUUIDs().toArray()));
+				}
+			}.start();
+			
+			/*GuiPlayerTabOverlay tab1 = Minecraft.getMinecraft().ingameGUI.getTabList();
 			if(tab1 instanceof TabOverlay) {
 				TabOverlay tab = (TabOverlay)tab1;
 				for(NetworkPlayerInfo playerInfo : tab.getCurrentlyDisplayedPlayers()) {
@@ -148,7 +163,7 @@ public class Command extends CommandBase {
 						}
 					}
 				}
-			}
+			}*/
 			break;
 		case "parties":
 			Game g = LaggView.getInstance().gameUpdater.getCurrentGame();

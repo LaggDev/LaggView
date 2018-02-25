@@ -14,8 +14,8 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.HudPropertyApi;
 import com.orangemarshall.hudproperty.IRenderer;
 import com.thelagg.laggview.LaggView;
-import com.thelagg.laggview.TabOverlay;
 import com.thelagg.laggview.URLConnectionReader;
+import com.thelagg.laggview.hud.TabOverlay;
 import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
 
@@ -183,7 +183,7 @@ public class Game {
 	}
 	
 	public boolean containsL(String formattedMsg) {
-		return Pattern.compile("(^|\\s|:|\u00A7.{1})L($|\\s)").matcher(formattedMsg).find();
+		return Pattern.compile("(^|\\s|:|\u00A7.{1})L+($|\\s|\u00A7)").matcher(formattedMsg).find();
 	}
 	
 	@SubscribeEvent

@@ -1,15 +1,11 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.apirequests;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.thelagg.laggview.apirequests.GuildRequest;
-import com.thelagg.laggview.apirequests.NameHistoryRequest;
-import com.thelagg.laggview.apirequests.NameToUUIDRequest;
-import com.thelagg.laggview.apirequests.PlayerRequest;
-import com.thelagg.laggview.apirequests.SessionRequest;
+import scala.actors.threadpool.Arrays;
 
 public class ApiCache {
 	public Map<UUID,PlayerRequest> playerCache;
@@ -162,12 +158,24 @@ public class ApiCache {
 		}
 		ApiRequest r = requestQueue.get(0);
 		r.processRequest();
-
 	}
-
-	public GuildRequest getCurrentGuild(UUID uuid, int priority) {
+	
+	public enum RequestPriority {
+		NAME_CHECK(1),
+		SESSION_REQUEST(2),
+		GUILD_REQUEST(3),
+		GUILD_CHECK(4),
+		PLAYER_REQUEST(5);
 		
-		return null;
+		public int level;
+		
+		private RequestPriority(int priority) {
+			this.level = priority;
+		}
+		
+		public int getPriorityLevel() {
+			return this.level;
+		}
 	}
 	
 }

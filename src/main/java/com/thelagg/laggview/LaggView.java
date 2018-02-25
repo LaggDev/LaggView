@@ -10,12 +10,13 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
-import javax.swing.Timer;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -24,9 +25,13 @@ import org.apache.logging.log4j.Logger;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.HudPropertyApi;
 import com.orangemarshall.hudproperty.IRenderer;
+import com.thelagg.laggview.apirequests.ApiCache;
+import com.thelagg.laggview.commands.Command;
 import com.thelagg.laggview.commands.TeamInvite;
 import com.thelagg.laggview.hud.GameUpdater;
+import com.thelagg.laggview.hud.GuiOverlay;
 import com.thelagg.laggview.hud.Hud;
+import com.thelagg.laggview.hud.TabOverlay;
 import com.thelagg.laggview.settings.Settings;
 
 import net.minecraft.client.Minecraft;
@@ -52,7 +57,7 @@ public class LaggView {
 	public static final String MODID = "laggview";
 	Minecraft mc;
 	public HackerRecorder hackerRecorder;
-	public GuildMonitor hackerMonitor;
+	public GuildMonitor guildMemberMonitor;
 	public ApiCache apiCache;
 	public static LaggView instance;
 	private long lastLogin;
@@ -64,6 +69,7 @@ public class LaggView {
 	public DiscordListener discordListener;
 	private boolean warnedAboutIncompatibility = false;
 	private String[] incompatibleMods = new String[] {"sidebarmod","oldanimations"};
+	private Timer timer;
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
@@ -75,14 +81,16 @@ public class LaggView {
 		apiCache = new ApiCache();
 		MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(hackerRecorder = new HackerRecorder(mc,this));
-        MinecraftForge.EVENT_BUS.register(hackerMonitor = new GuildMonitor(mc,this));
+        MinecraftForge.EVENT_BUS.register(guildMemberMonitor = new GuildMonitor(mc,this));
         ClientCommandHandler.instance.registerCommand(new Command(this));
         ClientCommandHandler.instance.registerCommand(new TeamInvite());
-        new Timer(10,new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
 				apiCache.processFirstRequest();
 			}
-        }).start();
+        }, 0, 10);
         MinecraftForge.EVENT_BUS.register(gameUpdater = new GameUpdater(mc,this));
         this.hud = new Hud(this,mc);
         new Thread(() -> loadDiscordListener()).start();

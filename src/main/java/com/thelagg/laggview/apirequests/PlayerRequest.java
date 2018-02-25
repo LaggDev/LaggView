@@ -8,8 +8,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import com.thelagg.laggview.ApiCache;
-import com.thelagg.laggview.ApiRequest;
 import com.thelagg.laggview.URLConnectionReader;
 
 import net.minecraft.util.EnumChatFormatting;
