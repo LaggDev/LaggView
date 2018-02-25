@@ -29,7 +29,8 @@ public class Hud implements IRenderer {
 		KILLS(3),
 		ASSISTS(4), 
 		SOULS(5),
-		WITHER_TIMER(6);
+		WITHER_TIMER(6),
+		BEDS_DESTROYED(7);
 
 		public int value;
 		private Priority(int priority) {

@@ -103,7 +103,7 @@ public class Settings {
 	}
 	
 	public static Settings getDefaultSettings() {
-		Settings s = new Settings("CTRL + J","CTRL + I",new ArrayList<String>(),0,0,true);
+		Settings s = new Settings("ALT + J","ALT + I",new ArrayList<String>(),0,0,false);
 		s.saveToFile();
 		return s;
 	}

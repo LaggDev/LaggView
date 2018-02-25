@@ -10,10 +10,14 @@ import com.ibm.icu.impl.duration.impl.Utils;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.Util;
+import com.thelagg.laggview.games.BedwarsGame;
+import com.thelagg.laggview.games.BlitzGame;
 import com.thelagg.laggview.games.Game;
 import com.thelagg.laggview.games.Lobby;
 import com.thelagg.laggview.games.MegaWallsGame;
 import com.thelagg.laggview.games.SkywarsGame;
+import com.thelagg.laggview.games.TNTGame;
+import com.thelagg.laggview.games.UHCGame;
 import com.thelagg.laggview.games.Game.GameType;
 
 import net.minecraft.client.Minecraft;
@@ -48,7 +52,8 @@ public class GameUpdater {
 			return false;
 		}
 		String newStr = so.getDisplayName().replaceAll("\u00A7.{1}", "").trim();
-		return !newStr.equals("housing") && !newStr.equals("battleLobby") && !newStr.equals("PreScoreboard") && !newStr.equals("MegaScoreboard");
+		return !newStr.equals("housing") && !newStr.equals("battleLobby") && !newStr.equals("PreScoreboard") && !newStr.equals("MegaScoreboard")
+				&& !newStr.equals("HYPIXEL UHC");
 	}
 	
 	@SubscribeEvent
@@ -141,6 +146,19 @@ public class GameUpdater {
 			return new Lobby(id,mc,laggView);
 		case SKYWARS:
 			return new SkywarsGame(id,mc,laggView);
+		case BED_WARS:
+			return new BedwarsGame(id,mc,laggView);
+		case BLITZ_SURVIVAL_GAMES:
+			return new BlitzGame(id,mc,laggView);
+		case THE_TNT_GAMES:
+		case BOW_SPLEEF:
+		case TNT_RUN:
+		case TNT_TAG:
+		case WIZARDS:
+		case PVP_RUN:
+			return TNTGame.getTNTGame(id, mc, laggView);
+		case UHC_CHAMPIONS:
+			return new UHCGame(id,mc,laggView);
 		default:
 			return new Game(type,id,mc,laggView);
 		}

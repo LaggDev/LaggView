@@ -33,14 +33,144 @@ public class PlayerRequest extends ApiRequest {
 		this.apiCache.playerCache.put(uuid, this);
 		this.apiCache.requestQueue.remove(this);
 	}
+
 	
-	public String getFinalKDRString() {
-		double finalKdr = this.getFinalKDR();
-		DecimalFormat df = new DecimalFormat("0.0");
-		return EnumChatFormatting.GOLD + df.format(finalKdr);
+	
+	public String getTNTRunWinsStr() {
+		return noDecimal(this.getTNTRunWins());
 	}
 	
-	public double getFinalKDR() {
+	public double getTNTRunWins() {
+		return this.getSingleStat("player/stats/TNTGames/wins_tntrun");
+	}
+	
+	public String getBowSpleefWinsStr() {
+		return noDecimal(this.getBowSpleefWins());
+	}
+	
+	public double getBowSpleefWins() {
+		return this.getSingleStat("player/stats/TNTGames/wins_bowspleef");
+	}
+	
+	public String getPVPRunWinsStr() {
+		return noDecimal(this.getPVPRunWins());
+	}
+	
+	public double getPVPRunWins() {
+		return this.getSingleStat("player/stats/TNTGames/wins_pvprun");
+	}
+	
+	public String getPVPRunWLRStr() {
+		return this.format(this.getPVPRunWLR());
+	}
+	
+	public double getPVPRunWLR() {
+		return this.getKDRorWLR("player/stats/TNTGames/wins_pvprun", "player/stats/TNTGames/deaths_pvprun");
+	}
+	
+	public String getTNTTagWinsStr() {
+		return this.noDecimal(this.getTNTTagWins());
+	}
+	
+	public double getTNTTagWins() {
+		return this.getSingleStat("player/stats/TNTGames/wins_tntag");
+	}
+	
+	public String getWizardsKDRStr() {
+		return format(this.getWizardsKDR());
+	}
+	
+	public double getWizardsKDR() {
+		return this.getKDRorWLR("player/stats/TNTGames/kills_capture", "player/stats/TNTGames/deaths_capture");
+	}
+	
+	public String getBowSpleefWLRStr() {
+		return format(this.getBowSpleefWLR());
+	}
+	
+	public double getBowSpleefWLR() {
+		return this.getKDRorWLR("player/stats/TNTGames/wins_bowspleef", "player/stats/TNTGames/deaths_bowspleef");
+	}
+	
+	public double getKDRorWLR(String topValue, String bottomValue) {
+		try {
+			Long kills = (Long) getObjectAtPath(topValue);
+			Long deaths = (Long)getObjectAtPath(bottomValue);
+			double killsTotal = kills;
+			double deathsTotal = deaths;
+			if(deathsTotal==0) {
+				return 0;
+			}
+			return killsTotal/deathsTotal;
+		} catch (NullPointerException | ClassCastException e) {
+			return 0;
+		}
+	}
+	
+	public double getSingleStat(String name) {
+		try {
+			Long kills = (Long) getObjectAtPath(name);
+			return kills;
+		} catch (NullPointerException | ClassCastException e) {
+			return 0;
+		}
+	}
+	
+	public String getMWFinalKDRStr() {
+		return format(this.getMWFinalKDR());
+	}
+	
+	public double getBsgKDR() {
+		return this.getKDRorWLR("player/stats/HungerGames/kills", "player/stats/HungerGames/deaths");
+	}
+	
+	public String format(double d) {
+		DecimalFormat df = new DecimalFormat("0.0");
+		return EnumChatFormatting.GOLD + df.format(d);
+	}
+	
+	public String noDecimal(double d) {
+		try {
+			return EnumChatFormatting.GOLD + Integer.toString((int)d);
+		} catch (ClassCastException e) {
+			return EnumChatFormatting.GOLD + "0";
+		}
+	}
+	
+	public String getUHCKDRStr() {
+		return format(this.getUHCKDR());
+	}
+	
+	public String getTntRunWLRStr() {
+		return format(this.getTntRunWLR());
+	}
+	
+	public double getTntRunWLR() {
+		return this.getKDRorWLR("player/stats/TNTGames/wins_tntrun", "player/stats/TNTGames/deaths_tntrun");
+	}
+	
+	public double getUHCKDR() {
+		try {
+			Long kills = (Long) getObjectAtPath("player/stats/UHC/kills");
+			Long killsSolo = (Long) getObjectAtPath("player/stats/UHC/kills_solo");
+			Long deaths = (Long)getObjectAtPath("player/stats/HungerGames/deaths");
+			Long deathsSolo = (Long) getObjectAtPath("player/stats/UHC/deaths_solo");
+			double killsTotal = kills + killsSolo;
+			double deathsTotal = deaths + deathsSolo;
+			if(deathsTotal==0) {
+				return 0;
+			}
+			return killsTotal/deathsTotal;
+		} catch (NullPointerException | ClassCastException e) {
+			return 0;
+		}
+	}
+	
+	public String getBsgKDRStr() {
+		return format(this.getBsgKDR());
+	}
+	
+	public double getMWFinalKDR() {
 		try {
 			Long final_kills = (Long) getObjectAtPath("player/stats/Walls3/final_kills");
 			Long finalKills = (Long) getObjectAtPath("player/stats/Walls3/finalKills");
@@ -70,19 +200,16 @@ public class PlayerRequest extends ApiRequest {
 		return (String)getObjectAtPath("player/displayname");
 	}
 
+	public double getBedwarsFinalKDR() {
+		return this.getKDRorWLR("player/stats/Bedwars/final_kills_bedwars", "player/stats/Bedwars/losses_bedwars");
+	}
+	
+	public String getBedwarsFinalKDRStr() {
+		return format(this.getBedwarsFinalKDR());
+	}
+	
 	public double getSkywarsKDR() {
-		try {
-			Long kills = (Long) getObjectAtPath("player/stats/SkyWars/kills");
-			Long deaths = (Long)getObjectAtPath("player/stats/SkyWars/deaths");
-			double killsTotal = kills;
-			double deathsTotal = deaths;
-			if(deathsTotal==0) {
-				return 0;
-			}
-			return killsTotal/deathsTotal;
-		} catch (NullPointerException | ClassCastException e) {
-			return 0;
-		}
+		return this.getKDRorWLR("player/stats/SkyWars/kills", "player/stats/SkyWars/deaths");
 	}
 	
 	public double getBedwarsLevel() {
@@ -95,32 +222,28 @@ public class PlayerRequest extends ApiRequest {
 	}
 	
 	public String getBedwarsLevelStr() {
-		double level = this.getBedwarsLevel();
-		DecimalFormat df = new DecimalFormat("0.0");
-		return EnumChatFormatting.GOLD + df.format(level);
+		return format(this.getBedwarsLevel());
 	}
 	
 	public String getSkywarsKDRStr() {
-		double kdr = this.getSkywarsKDR();
-		DecimalFormat df = new DecimalFormat("0.0");
-		return EnumChatFormatting.GOLD + df.format(kdr);
+		return format(this.getSkywarsKDR());
 	}
 	
-    public static double getBedwarsLevel(long experience) {
+    public static double getBedwarsLevel(double experience) {
         // first few levels are different
-        if (experience < 500) {
+        if (experience < 500.0) {
             return 0;
-        } else if (experience < 1500) {
+        } else if (experience < 1500.0) {
             return 1;
-        } else if (experience < 3500) {
+        } else if (experience < 3500.0) {
             return 2;
-        } else if (experience < 5500) {
+        } else if (experience < 5500.0) {
             return 3;
-        } else if (experience < 9000) {
+        } else if (experience < 9000.0) {
             return 4;
         }
-        experience -= 9000;
-        return experience / 5000 + 4;
+        experience -= 9000.0;
+        return experience / 5000.0 + 4.0;
     }
 	
 }

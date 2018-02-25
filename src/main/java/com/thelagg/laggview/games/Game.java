@@ -15,6 +15,10 @@ import com.orangemarshall.hudproperty.HudPropertyApi;
 import com.orangemarshall.hudproperty.IRenderer;
 import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.URLConnectionReader;
+import com.thelagg.laggview.apirequests.PlayerRequest;
+import com.thelagg.laggview.apirequests.SessionRequest;
+import com.thelagg.laggview.apirequests.StatGetter;
+import com.thelagg.laggview.apirequests.StringReplacer;
 import com.thelagg.laggview.hud.TabOverlay;
 import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
@@ -23,6 +27,7 @@ import akka.event.EventBus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.network.play.client.C01PacketChatMessage;
+import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
@@ -43,8 +48,13 @@ public class Game {
 		MEGA_WALLS("MEGA WALLS"),
 		BLITZ_SURVIVAL_GAMES("BLITZ SG"),
 		WARLORDS("WARLORDS"),
-		UHC_CHAMPIONS("UHC CHAMPIONS"),
+		UHC_CHAMPIONS("HYPIXEL"),
 		THE_TNT_GAMES("THE TNT GAMES"),
+		TNT_RUN("TNT RUN"),
+		BOW_SPLEEF("BOW SPLEEF"),
+		PVP_RUN("PVP RUN"),
+		TNT_TAG("TNT TAG"),
+		WIZARDS("WIZARDS"),
 		COPS_AND_CRIMS("COPS AND CRIMS"),
 		ARCADE_GAMES("ARCADE GAMES"),
 		SPEED_UHC("SPEED UHC"),
@@ -294,6 +304,50 @@ public class Game {
 
 	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
 		return false;
+	}
+	
+	public boolean genericProcessPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay, String statname, StatGetter statGetter) {
+        String s1 = tabOverlay.getPlayerName(player);
+        tabOverlay.setFooter(new ChatComponentText(ChatFormatting.GREEN + "Displaying " + ChatFormatting.RED + statname + ChatFormatting.GREEN + " in tab"));
+        PlayerRequest playerRequest = laggView.apiCache.getPlayerResult(player.getGameProfile().getId(), 1);
+        SessionRequest sessionRequest = laggView.apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
+        if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
+        	laggView.apiCache.update(sessionRequest);
+        }
+
+        if(this.showRealNames && playerRequest!=null && playerRequest.getName()!=null && playersToReveal!=null && playersToReveal.contains(player.getGameProfile().getId())) {
+        	if(!s1.contains(playerRequest.getName())) {
+        		tabOverlay.getSecondNames().put(player, s1);
+        	}
+        	s1 = s1.replaceAll(player.getGameProfile().getName(), ChatFormatting.DARK_RED + playerRequest.getName());
+        }
+        
+        String kdr = playerRequest==null?"?":statGetter.getStat(playerRequest);
+        tabOverlay.getNamesInTab().put(player, s1);
+        tabOverlay.getSuffixes().put(player, kdr);
+		return true;
+	}
+	
+	public boolean genericProcessPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay, String statname, StatGetter statGetter, StringReplacer secondNameReplacer) {
+        String s1 = tabOverlay.getPlayerName(player);
+        tabOverlay.setFooter(new ChatComponentText(ChatFormatting.GREEN + "Displaying " + ChatFormatting.RED + statname + ChatFormatting.GREEN + " in tab"));
+        PlayerRequest playerRequest = laggView.apiCache.getPlayerResult(player.getGameProfile().getId(), 1);
+        SessionRequest sessionRequest = laggView.apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
+        if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
+        	laggView.apiCache.update(sessionRequest);
+        }
+
+        if(this.showRealNames && playerRequest!=null && playerRequest.getName()!=null && playersToReveal!=null && playersToReveal.contains(player.getGameProfile().getId())) {
+        	if(!s1.contains(playerRequest.getName())) {
+        		tabOverlay.getSecondNames().put(player, secondNameReplacer.replaceStr(s1));
+        	}
+        	s1 = s1.replaceAll(player.getGameProfile().getName(), ChatFormatting.DARK_RED + playerRequest.getName());
+        }
+        
+        String kdr = playerRequest==null?"?":statGetter.getStat(playerRequest);
+        tabOverlay.getNamesInTab().put(player, s1);
+        tabOverlay.getSuffixes().put(player, kdr);
+		return true;
 	}
 	
 	public static class ChatMessage {

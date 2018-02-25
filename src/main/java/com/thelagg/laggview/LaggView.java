@@ -79,6 +79,7 @@ public class LaggView {
 		settings = Settings.loadFromFile();
 		mc = Minecraft.getMinecraft();
 		apiCache = new ApiCache();
+		MinecraftForge.EVENT_BUS.register(new KeyManager(mc));
 		MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(hackerRecorder = new HackerRecorder(mc,this));
         MinecraftForge.EVENT_BUS.register(guildMemberMonitor = new GuildMonitor(mc,this));

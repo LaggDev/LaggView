@@ -29,8 +29,8 @@ public class GuildMonitor {
 	private List<UUID> guildMembers;
 	private List<String> partyMembers;
 	private Timer timer;
-	public boolean checkingForParty = false;
-	public boolean updatedParty = false;
+	private boolean checkingForParty = false;
+	private boolean updatedParty = false;
 	private boolean checkForPartiesNextMsg = false;
 	
 	public GuildMonitor(Minecraft mc, LaggView laggView) {
@@ -47,10 +47,11 @@ public class GuildMonitor {
 				}
 				GuildRequest r = laggView.apiCache.getGuildResult(mc.thePlayer.getUniqueID(), 0);
 				guildMembers = r.getUUIDs();
+				updateParty();
 				updateNameTags();
 			}
 			
-		}, 0, 1000*30);
+		}, 0, 1000*60*2);
 	}
 	
 	public void updateNameTags() {
@@ -79,6 +80,7 @@ public class GuildMonitor {
 		Matcher m7 = Pattern.compile("(.*?)[a-zA-Z0-9_]+ \u00A7r\u00A7ahas been removed from your party\u00A7r").matcher(str);
 		Matcher m8 = Pattern.compile("(.*?)[a-zA-Z0-9_]+ \u00A7r\u00A7ehas disbanded the party!\u00A7r").matcher(str);
 		Matcher m9 = Pattern.compile("\u00A7aYou left the party\u00A7r").matcher(str);
+		Matcher m10 = Pattern.compile("\u00A7cYou must be in a party to use this command!\u00A7r").matcher(str);
 		if(m.find() || m3.find() || m4.find() || m5.find() || m6.find() || m7.find() || m8.find() || m9.find()) {
 			checkForPartiesNextMsg();
 			return;
@@ -87,8 +89,10 @@ public class GuildMonitor {
 			checkForPartiesNextMsg = false;
 			new Thread(() -> updateParty()).start();
 		}
-		if(m1.find()) {
-			System.out.println(str);
+		if(m1.find() || m10.find()) {
+			if(!checkingForParty) {
+				partyMembers = new ArrayList<String>();
+			}
 			while(m2.find()) {
 				if(!partyMembers.contains(m2.group(2))) {
 					partyMembers.add(m2.group(2));
@@ -97,6 +101,8 @@ public class GuildMonitor {
 			if(checkingForParty) {
 				event.setCanceled(true);
 				updatedParty = true;
+			} else {
+				this.updateNameTags();
 			}
 		}
 		

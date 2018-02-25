@@ -20,57 +20,43 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 public class BedwarsGame extends Game {
 	
 	private int kills = 0;
-	private int assists = 0;
-	private int souls = 0;
+	private int bedsDestroyed = 0;
+	private int finalKills = 0;
 	
 	public BedwarsGame(String serverId, Minecraft mc, LaggView laggView) {
 		super(GameType.BED_WARS, serverId, mc, laggView);
 		this.updateHudText(new HudText(Priority.KILLS,ChatFormatting.LIGHT_PURPLE + "Kills: " + kills));
-		this.updateHudText(new HudText(Priority.ASSISTS,ChatFormatting.LIGHT_PURPLE + "Assists: " + assists));
-		this.updateHudText(new HudText(Priority.SOULS,ChatFormatting.LIGHT_PURPLE + "Souls: " + souls));
+		this.updateHudText(new HudText(Priority.FINAL_KILLS,ChatFormatting.LIGHT_PURPLE + "Final Kills: " + finalKills));
+		this.updateHudText(new HudText(Priority.BEDS_DESTROYED,ChatFormatting.LIGHT_PURPLE + "Beds Destroyed: " + bedsDestroyed));
 	}
 	
 	@Override
 	public void onChat(ClientChatReceivedEvent event) {
 		super.onChat(event);
-		checkForMyKillsAndAssists(event.message.getFormattedText());
+		checkForMyKills(event.message.getFormattedText());
 	}
 	
-	public void checkForMyKillsAndAssists(String msg) {
-		Matcher m = Pattern.compile("\u00A7r\u00A76\\+\\d+ coins!.*  Kill\u00A7r").matcher(msg);
-		Matcher m2 = Pattern.compile("\u00A7rYou have assisted killing \u00A7r\u00A7.\\S+ \u00A7r\u00A7e!\u00A7r").matcher(msg);
-		Matcher m3 = Pattern.compile("\u00A7r\u00A7b\\+(\\d+) Soul").matcher(msg);
+	public void checkForMyKills(String msg) {
+		Matcher m = Pattern.compile("\u00A7r\u00A7.[a-zA-Z0-9_]+ \u00A7r\u00A77.*? \u00A7r\u00A7." + mc.thePlayer.getName() + "\u00A7r\u00A77.\u00A7r").matcher(msg);
+		Matcher m2 = Pattern.compile("\u00A7r\u00A76\\+\\d+ coins\\!.*? \\(Bed Destroyed\\)\u00A7r").matcher(msg);
+		Matcher m3 = Pattern.compile("\u00A7r\u00A76\\+\\d+ coins\\!.*? \\(Final Kill\\)\u00A7r").matcher(msg);
+		Matcher m4 = Pattern.compile("\u00A7r\u00A76\\+\\d+ coins\\!.*? \\(Win\\)\u00A7r").matcher(msg);
+		
 		if(m.find()) {
 			kills++;
 			this.updateHudText(new HudText(Priority.KILLS,ChatFormatting.LIGHT_PURPLE + "Kills: " + kills));
 		} else if (m2.find()) {
-			assists++;
-			this.updateHudText(new HudText(Priority.ASSISTS,ChatFormatting.LIGHT_PURPLE + "Assists: " + assists));
-		} else if (m3.find()) {
-			souls+=Integer.parseInt(m3.group(1));
-			this.updateHudText(new HudText(Priority.SOULS,ChatFormatting.LIGHT_PURPLE + "Souls: " + souls));
+			bedsDestroyed++;
+			this.updateHudText(new HudText(Priority.BEDS_DESTROYED,ChatFormatting.LIGHT_PURPLE + "Beds Destroyed: " + bedsDestroyed));
+		} else if (m3.find() || m4.find()) {
+			finalKills++;
+			this.updateHudText(new HudText(Priority.FINAL_KILLS,ChatFormatting.LIGHT_PURPLE + "Final Kills: " + finalKills));
 		}
 	}
 	
 	@Override
 	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
-        String s1 = tabOverlay.getPlayerName(player);
-        tabOverlay.setFooter(new ChatComponentText(ChatFormatting.GREEN + "Displaying " + ChatFormatting.RED + "Bedwars Level" + ChatFormatting.GREEN + " in tab"));
-        PlayerRequest playerRequest = laggView.apiCache.getPlayerResult(player.getGameProfile().getId(), 1);
-        SessionRequest sessionRequest = laggView.apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
-        if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
-        	laggView.apiCache.update(sessionRequest);
-        }
-
-        if(this.showRealNames && playerRequest!=null && playerRequest.getName()!=null && playersToReveal!=null && playersToReveal.contains(player.getGameProfile().getId())) {
-        	tabOverlay.getSecondNames().put(player, s1);
-        	s1 = s1.replaceAll(player.getGameProfile().getName(), ChatFormatting.DARK_RED + playerRequest.getName());
-        }
-        
-        String lvl = playerRequest==null?"?":playerRequest.getSkywarsKDRStr();
-        tabOverlay.getNamesInTab().put(player, s1);
-        tabOverlay.getSuffixes().put(player, lvl);
-		return true;
+		return this.genericProcessPlayerTab(player, tabOverlay, "Final K/D", (PlayerRequest p) -> p.getMWFinalKDRStr());
 	}
 	
 }

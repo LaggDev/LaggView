@@ -33,6 +33,7 @@ import net.minecraftforge.client.GuiIngameForge;
 public class GuiOverlay extends GuiIngameForge {
 	
 	LaggView laggView;
+	List<String> scoreboard = new ArrayList<String>();
 	
     public GuiOverlay(Minecraft mcIn, LaggView laggView) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
     	super(mcIn);
@@ -102,9 +103,14 @@ public class GuiOverlay extends GuiIngameForge {
     	return null;
     }
     
+    public String[] getScoreboard() {
+    	return scoreboard.toArray(new String[scoreboard.size()]);
+    }
+    
     @Override
     protected void renderScoreboard(ScoreObjective p_180475_1_, ScaledResolution p_180475_2_)
     {
+    	this.scoreboard = new ArrayList<String>();
         Scoreboard scoreboard = p_180475_1_.getScoreboard();
         Collection<Score> collection = scoreboard.getSortedScores(p_180475_1_);
         List<Score> list = Lists.newArrayList(Iterables.filter(collection, new Predicate<Score>()
@@ -168,6 +174,7 @@ public class GuiOverlay extends GuiIngameForge {
             GlStateManager.enableAlpha();
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+            this.scoreboard.add(s1);
             if(s1.contains("\u00A7a")) {
             	Matcher m = Pattern.compile("\u00A7a([a-zA-Z0-9_]+)[^\\x00-\\x7F]*([a-zA-Z0-9_]*)").matcher(s1);
             	if(m.find()) {
