@@ -14,7 +14,6 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.HudPropertyApi;
 import com.orangemarshall.hudproperty.IRenderer;
 import com.thelagg.laggview.LaggView;
-import com.thelagg.laggview.URLConnectionReader;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
 import com.thelagg.laggview.apirequests.StatGetter;
@@ -22,6 +21,7 @@ import com.thelagg.laggview.apirequests.StringReplacer;
 import com.thelagg.laggview.hud.TabOverlay;
 import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
+import com.thelagg.laggview.utils.URLConnectionReader;
 
 import akka.event.EventBus;
 import net.minecraft.client.Minecraft;

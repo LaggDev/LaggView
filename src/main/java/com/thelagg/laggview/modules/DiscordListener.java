@@ -1,4 +1,4 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.modules;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +22,7 @@ import javax.security.auth.login.LoginException;
 import javax.swing.Timer;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
+import com.thelagg.laggview.utils.Util;
 
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;

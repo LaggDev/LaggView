@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
-import com.thelagg.laggview.Util;
+import com.thelagg.laggview.utils.Util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;

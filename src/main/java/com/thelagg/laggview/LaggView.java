@@ -32,7 +32,14 @@ import com.thelagg.laggview.hud.GameUpdater;
 import com.thelagg.laggview.hud.GuiOverlay;
 import com.thelagg.laggview.hud.Hud;
 import com.thelagg.laggview.hud.TabOverlay;
+import com.thelagg.laggview.modules.DiscordListener;
+import com.thelagg.laggview.modules.GuildMonitor;
+import com.thelagg.laggview.modules.HackerRecorder;
+import com.thelagg.laggview.modules.KeyManager;
+import com.thelagg.laggview.modules.MyPacketHandler;
 import com.thelagg.laggview.settings.Settings;
+import com.thelagg.laggview.utils.URLConnectionReader;
+import com.thelagg.laggview.utils.Util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;

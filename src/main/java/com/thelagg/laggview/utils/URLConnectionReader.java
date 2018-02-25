@@ -1,4 +1,4 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;

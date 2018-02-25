@@ -1,10 +1,13 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.modules;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.thelagg.laggview.utils.URLConnectionReader;
+import com.thelagg.laggview.utils.Util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;

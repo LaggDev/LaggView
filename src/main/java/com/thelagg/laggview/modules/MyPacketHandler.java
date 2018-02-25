@@ -1,4 +1,4 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.modules;
 
 
 import java.lang.reflect.Field;
@@ -14,6 +14,8 @@ import org.apache.logging.log4j.LogManager;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.realmsclient.gui.ChatFormatting;
+import com.thelagg.laggview.LaggView;
+import com.thelagg.laggview.utils.Util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;

@@ -16,14 +16,14 @@ import org.apache.logging.log4j.Level;
 import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.LaggView;
-import com.thelagg.laggview.URLConnectionReader;
-import com.thelagg.laggview.Util;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
 import com.thelagg.laggview.hud.GuiOverlay;
 import com.thelagg.laggview.hud.TabOverlay;
 import com.thelagg.laggview.hud.Hud.HudText;
 import com.thelagg.laggview.hud.Hud.Priority;
+import com.thelagg.laggview.utils.URLConnectionReader;
+import com.thelagg.laggview.utils.Util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;

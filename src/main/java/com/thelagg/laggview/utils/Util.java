@@ -1,4 +1,4 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.utils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

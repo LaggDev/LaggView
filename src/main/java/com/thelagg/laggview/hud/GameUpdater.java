@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Level;
 import com.ibm.icu.impl.duration.impl.Utils;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.LaggView;
-import com.thelagg.laggview.Util;
 import com.thelagg.laggview.games.BedwarsGame;
 import com.thelagg.laggview.games.BlitzGame;
 import com.thelagg.laggview.games.Game;
@@ -19,6 +18,7 @@ import com.thelagg.laggview.games.SkywarsGame;
 import com.thelagg.laggview.games.TNTGame;
 import com.thelagg.laggview.games.UHCGame;
 import com.thelagg.laggview.games.Game.GameType;
+import com.thelagg.laggview.utils.Util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.scoreboard.ScoreObjective;

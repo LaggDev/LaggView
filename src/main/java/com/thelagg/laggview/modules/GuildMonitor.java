@@ -1,4 +1,4 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.modules;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
+import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.apirequests.GuildRequest;
 
 import net.minecraft.client.Minecraft;

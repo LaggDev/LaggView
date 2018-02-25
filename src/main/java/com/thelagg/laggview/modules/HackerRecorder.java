@@ -1,4 +1,4 @@
-package com.thelagg.laggview;
+package com.thelagg.laggview.modules;
 
 import java.awt.AWTException;
 import java.awt.Robot;
@@ -12,6 +12,8 @@ import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Mouse;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
+import com.thelagg.laggview.LaggView;
+import com.thelagg.laggview.utils.Util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;

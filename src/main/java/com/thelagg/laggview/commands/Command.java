@@ -14,8 +14,6 @@ import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.test.DelayedTask;
 import com.thelagg.laggview.LaggView;
-import com.thelagg.laggview.MyPacketHandler;
-import com.thelagg.laggview.Util;
 import com.thelagg.laggview.apirequests.GuildRequest;
 import com.thelagg.laggview.apirequests.NameHistoryRequest;
 import com.thelagg.laggview.apirequests.NameToUUIDRequest;
@@ -23,6 +21,8 @@ import com.thelagg.laggview.games.Game;
 import com.thelagg.laggview.games.MegaWallsGame;
 import com.thelagg.laggview.hud.HotkeyGui;
 import com.thelagg.laggview.hud.TabOverlay;
+import com.thelagg.laggview.modules.MyPacketHandler;
+import com.thelagg.laggview.utils.Util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;

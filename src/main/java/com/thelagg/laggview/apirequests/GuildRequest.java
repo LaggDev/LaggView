@@ -10,8 +10,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import com.thelagg.laggview.URLConnectionReader;
-import com.thelagg.laggview.Util;
+import com.thelagg.laggview.utils.URLConnectionReader;
+import com.thelagg.laggview.utils.Util;
 
 public class GuildRequest extends ApiRequest {
 

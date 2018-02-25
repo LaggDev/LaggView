@@ -10,8 +10,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
-import com.thelagg.laggview.URLConnectionReader;
-import com.thelagg.laggview.Util;
+import com.thelagg.laggview.utils.URLConnectionReader;
+import com.thelagg.laggview.utils.Util;
 
 public class NameHistoryRequest extends ApiRequest {
 
