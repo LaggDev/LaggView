@@ -63,7 +63,7 @@ public class TNTGame extends Game {
 		
 		@Override
 		public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
-			return this.genericProcessPlayerTab(player, tabOverlay, "W/L", (PlayerRequest p) -> p.getTNTRunWinsStr());
+			return this.genericProcessPlayerTab(player, tabOverlay, "Wins", (PlayerRequest p) -> p.getTNTRunWinsStr());
 		}
 		
 	}
@@ -76,7 +76,7 @@ public class TNTGame extends Game {
 		
 		@Override
 		public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
-			return this.genericProcessPlayerTab(player, tabOverlay, "W/L", (PlayerRequest p) -> p.getBowSpleefWinsStr());
+			return this.genericProcessPlayerTab(player, tabOverlay, "Wins", (PlayerRequest p) -> p.getBowSpleefWinsStr());
 		}
 		
 	}
@@ -102,7 +102,7 @@ public class TNTGame extends Game {
 		
 		@Override
 		public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
-			return this.genericProcessPlayerTab(player, tabOverlay, "W/L", (PlayerRequest p) -> p.getPVPRunWinsStr());
+			return this.genericProcessPlayerTab(player, tabOverlay, "Wins", (PlayerRequest p) -> p.getPVPRunWinsStr());
 		}
 		
 	}

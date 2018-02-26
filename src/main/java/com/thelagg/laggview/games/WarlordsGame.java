@@ -12,19 +12,16 @@ import com.thelagg.laggview.hud.Hud.Priority;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 
 public class WarlordsGame extends Game {
 
-	int damage;
-	int healing;
-	int kills;
-	int assists;
+	private int damage;
+	private int healing;
 	
 	public WarlordsGame(String serverId, Minecraft mc, LaggView laggView) {
 		super(GameType.WARLORDS, serverId, mc, laggView);
-		this.updateHudText(new HudText(Priority.KILLS, ChatFormatting.LIGHT_PURPLE + "Kills: " + kills));
-		this.updateHudText(new HudText(Priority.ASSISTS, ChatFormatting.LIGHT_PURPLE + "Deaths: " + assists));
 		this.updateHudText(new HudText(Priority.DAMAGE, ChatFormatting.LIGHT_PURPLE + "Damage: " + damage));
 		this.updateHudText(new HudText(Priority.HEALING, ChatFormatting.LIGHT_PURPLE + "Healing: " + healing));
 	}
@@ -33,22 +30,33 @@ public class WarlordsGame extends Game {
 	public void onChat(ClientChatReceivedEvent event) {
 		super.onChat(event);
 		String msg = event.message.getFormattedText();
-		Matcher m = Pattern.compile("").matcher(msg);
-		Matcher m2 = Pattern.compile("").matcher(msg);
-		Matcher m3 = Pattern.compile("").matcher(msg);
-		Matcher m4 = Pattern.compile("").matcher(msg);
+		countAttack(msg);
+	}
+	
+	public void countAttack(String message) {
+		Matcher m = Pattern.compile("\u00A7r\u00A7[a-z0-9](\u00BB|\u00AB) \u00A7r\u00A77(You|Your .*?|[a-zA-Z0-9_]+'s .*?) (critically |)(hit|healed) ([a-zA-Z0-9_]+) for \u00A7r\u00A7[a-z0-9](\u00A7l|)(\\d+)(!|)\u00A7r\u00A77 (critical |)(damage|melee damage|health).\u00A7r").matcher(message);
 		if(m.find()) {
-			this.kills++;
-			this.updateHudText(new HudText(Priority.KILLS, ChatFormatting.LIGHT_PURPLE + "Kills: " + kills));
-		} else if (m2.find()) {
-			this.assists++;
-			this.updateHudText(new HudText(Priority.ASSISTS, ChatFormatting.LIGHT_PURPLE + "Assists: " + assists));
-		} else if (m3.find()) {
-			 this.damage += Integer.parseInt(m.group(1));
-			 this.updateHudText(new HudText(Priority.DAMAGE, ChatFormatting.LIGHT_PURPLE + "Damage: " + damage));
-		} else if (m4.find()) {
-			this.healing += Integer.parseInt(m.group(1));
-			this.updateHudText(new HudText(Priority.HEALING, ChatFormatting.LIGHT_PURPLE + "Healing: " + healing));
+			if(m.group(1).equals("\u00BB")) {
+				if(m.group(4).equals("hit")) {
+					this.damage += Integer.parseInt(m.group(7));
+					 this.updateHudText(new HudText(Priority.DAMAGE, ChatFormatting.LIGHT_PURPLE + "Damage: " + damage));
+				} else if (m.group(4).equals("healed")) {
+					this.healing += Integer.parseInt(m.group(7));
+					this.updateHudText(new HudText(Priority.HEALING, ChatFormatting.LIGHT_PURPLE + "Healing: " + healing));
+				}	 else {
+					System.err.println(message);
+				}
+			} else if (m.group(1).equals("\u00AB")){
+				if(m.group(4).equals("hit")) {
+					
+				} else if (m.group(4).equals("healed")) {
+					
+				} else {
+					System.err.println(message);
+				}
+			} else {
+				System.err.println(message);
+			}
 		}
 	}
 	

@@ -11,12 +11,19 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.games.BedwarsGame;
 import com.thelagg.laggview.games.BlitzGame;
+import com.thelagg.laggview.games.CrazyWallsGame;
 import com.thelagg.laggview.games.Game;
 import com.thelagg.laggview.games.Lobby;
 import com.thelagg.laggview.games.MegaWallsGame;
+import com.thelagg.laggview.games.PaintballGame;
+import com.thelagg.laggview.games.QuakeCraftGame;
+import com.thelagg.laggview.games.SkyClashGame;
 import com.thelagg.laggview.games.SkywarsGame;
+import com.thelagg.laggview.games.SmashHeroesGame;
 import com.thelagg.laggview.games.TNTGame;
 import com.thelagg.laggview.games.UHCGame;
+import com.thelagg.laggview.games.VampireZGame;
+import com.thelagg.laggview.games.WarlordsGame;
 import com.thelagg.laggview.games.Game.GameType;
 import com.thelagg.laggview.utils.Util;
 
@@ -159,6 +166,20 @@ public class GameUpdater {
 			return TNTGame.getTNTGame(id, mc, laggView);
 		case UHC_CHAMPIONS:
 			return new UHCGame(id,mc,laggView);
+		case WARLORDS:
+			return new WarlordsGame(id,mc,laggView);
+		case CRAZY_WALLS:
+			return new CrazyWallsGame(id,mc,laggView);
+		case PAINTBALL_WARFARE:
+			return new PaintballGame(id,mc,laggView);
+		case QUAKECRAFT:
+			return new QuakeCraftGame(id,mc,laggView);
+		case SKYCLASH:
+			return new SkyClashGame(id,mc,laggView);
+		case SMASH_HEROES:
+			return new SmashHeroesGame(id,mc,laggView);
+		case VAMPIREZ:
+			return new VampireZGame(id,mc,laggView);
 		default:
 			return new Game(type,id,mc,laggView);
 		}

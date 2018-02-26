@@ -307,29 +307,12 @@ public class Game {
 	}
 	
 	public boolean genericProcessPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay, String statname, StatGetter statGetter) {
-        String s1 = tabOverlay.getPlayerName(player);
-        tabOverlay.setFooter(new ChatComponentText(ChatFormatting.GREEN + "Displaying " + ChatFormatting.RED + statname + ChatFormatting.GREEN + " in tab"));
-        PlayerRequest playerRequest = laggView.apiCache.getPlayerResult(player.getGameProfile().getId(), 1);
-        SessionRequest sessionRequest = laggView.apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
-        if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
-        	laggView.apiCache.update(sessionRequest);
-        }
-
-        if(this.showRealNames && playerRequest!=null && playerRequest.getName()!=null && playersToReveal!=null && playersToReveal.contains(player.getGameProfile().getId())) {
-        	if(!s1.contains(playerRequest.getName())) {
-        		tabOverlay.getSecondNames().put(player, s1);
-        	}
-        	s1 = s1.replaceAll(player.getGameProfile().getName(), ChatFormatting.DARK_RED + playerRequest.getName());
-        }
-        
-        String kdr = playerRequest==null?"?":statGetter.getStat(playerRequest);
-        tabOverlay.getNamesInTab().put(player, s1);
-        tabOverlay.getSuffixes().put(player, kdr);
-		return true;
+		return this.genericProcessPlayerTab(player, tabOverlay, statname, statGetter, (String s) -> s, (String s) -> s.replaceAll("\u00A7k", ""));
 	}
 	
-	public boolean genericProcessPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay, String statname, StatGetter statGetter, StringReplacer secondNameReplacer) {
+	public boolean genericProcessPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay, String statname, StatGetter statGetter, StringReplacer secondNameReplacer, StringReplacer unscrambler) {
         String s1 = tabOverlay.getPlayerName(player);
+        s1 = unscrambler.replaceStr(s1);
         tabOverlay.setFooter(new ChatComponentText(ChatFormatting.GREEN + "Displaying " + ChatFormatting.RED + statname + ChatFormatting.GREEN + " in tab"));
         PlayerRequest playerRequest = laggView.apiCache.getPlayerResult(player.getGameProfile().getId(), 1);
         SessionRequest sessionRequest = laggView.apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);

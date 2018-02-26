@@ -34,6 +34,116 @@ public class PlayerRequest extends ApiRequest {
 		this.apiCache.requestQueue.remove(this);
 	}
 
+	public String getNetworkLevelStr() {
+		return format(getNetworkLevel());
+	}
+	
+	public double getNetworkLevel() {
+		try {
+			Long experience = (Long) this.getObjectAtPath("player/networkExp");
+			return getExactLevel(experience);
+		} catch (ClassCastException | NullPointerException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+	
+    private static double getLevel(double exp) {
+        double BASE = 10000.0;
+        double GROWTH = 2500.0;
+        double HALF_GROWTH = 0.5 * GROWTH;
+        double REVERSE_PQ_PREFIX = -(BASE - 0.5 * GROWTH) / GROWTH;
+        double REVERSE_CONST = REVERSE_PQ_PREFIX * REVERSE_PQ_PREFIX;
+        double GROWTH_DIVIDES_2 = 2 / GROWTH;
+        return exp<0 ? 1 : Math.floor(1 + REVERSE_PQ_PREFIX + Math.sqrt(REVERSE_CONST + GROWTH_DIVIDES_2 * exp));
+    }
+
+    private static double getExactLevel(double exp) {
+            return getLevel(exp) + getPercentageToNextLevel(exp);
+    }
+
+    private static double getExpFromLevelToNext(double level) {
+        double BASE = 10000.0;
+        double GROWTH = 2500.0;
+        return level < 1.0 ? BASE : GROWTH * (level - 1.0) + BASE;
+    }
+
+    private static double getTotalExpToLevel(double level) {
+        double lv = Math.floor(level);
+        double x0 = getTotalExpToFullLevel(lv);
+        if (level == lv) return x0;
+        return (getTotalExpToFullLevel(lv + 1.0) - x0) * (level % 1.0) + x0;
+    }
+
+    private static double getTotalExpToFullLevel(double level) {
+        double BASE = 10000.0;
+        double GROWTH = 2500.0;
+        double HALF_GROWTH = 0.5 * GROWTH;
+        return (HALF_GROWTH * (level - 2.0) + BASE) * (level - 1.0);
+    }
+
+    private static double getPercentageToNextLevel(double exp) {
+        double lv = getLevel(exp);
+        double x0 = getTotalExpToLevel(lv);
+        return (exp - x0) / (getTotalExpToLevel(lv + 1.0) - x0);
+    }
+	
+	public String getVampireZKDRStr() {
+		return format(this.getVampireZKDR());
+	}
+	
+	public double getVampireZKDR() {
+		return this.getKDRorWLR("player/stats/VampireZ/human_kills", "player/stats/VampireZ/human_deaths");
+	}
+	
+	public String getWallsKDRStr() {
+		return format(this.getWallsKDR());
+	}
+	
+	public double getWallsKDR() {
+		return this.getKDRorWLR("player/stats/Walls/kills", "player/stats/Walls/deaths");
+	}
+	
+	public String getPaintballKDRStr() {
+		return format(this.getPaintballKDR());
+	}
+	
+	public double getPaintballKDR() {
+		return this.getKDRorWLR("player/stats/Paintball/kills", "player/stats/Paintball/deaths");
+	}
+	
+	public String getQuakeCraftKDRStr() {
+		return format(this.getQuakeCraftKDR());
+	}
+	
+	public double getQuakeCraftKDR() {
+		return this.getKDRorWLR("player/stats/Quake/kills", "player/stats/Quake/deaths");
+	}
+	
+	public String getCrazyWallsKDRStr() {
+		return format(this.getCrazyWallsKDR());
+	}
+	
+	public double getCrazyWallsKDR() {
+		return this.getKDRorWLR("player/stats/TrueCombat/kills", "player/stats/TrueCombat/deaths");
+	}
+	
+	public String getSmashHeroesKDRStr() {
+		return format(this.getSmashHeroesKDR());
+	}
+	
+	public double getSmashHeroesKDR() {
+		return this.getKDRorWLR("player/stats/SuperSmash/kills", "player/stats/SuperSmash/deaths");
+	}
+	
+	public String getSkyClashKDRStr() {
+		return this.format(this.getSkyClashKDR());
+	}
+	
+	public double getSkyClashKDR() {
+		return this.getKDRorWLR("player/stats/SkyClash/kills", "player/stats/SkyClash/deaths");
+	}
+	
 	public String getWarlordsWLRStr() {
 		return this.format(getWarlordsWLR());
 	}

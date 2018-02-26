@@ -47,7 +47,7 @@ public class BlitzGame extends Game {
 	
 	@Override
 	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
-		return this.genericProcessPlayerTab(player, tabOverlay, "K/D", (PlayerRequest p) -> p.getBsgKDRStr());
+		return this.genericProcessPlayerTab(player, tabOverlay, "K/D", (PlayerRequest p) -> p.getBsgKDRStr(), (String s) -> s, (String s) -> s.replaceFirst("XXXXX", "").replaceAll("\u00A7k", ""));
 	}
-	
+
 }

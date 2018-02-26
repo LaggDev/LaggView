@@ -2,12 +2,15 @@ package com.thelagg.laggview.modules;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,7 +23,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.fml.common.eventhandler.EventBus;
+import net.minecraftforge.fml.common.eventhandler.IEventListener;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class GuildMonitor {
@@ -117,6 +123,22 @@ public class GuildMonitor {
 	}
 	
 	public void updateParty() {
+		Object removedEvent = null;
+		try {
+			Field flistener = EventBus.class.getDeclaredField("listeners");
+			flistener.setAccessible(true);
+			ConcurrentHashMap<Object, ArrayList<IEventListener>> listeners = (ConcurrentHashMap<Object, ArrayList<IEventListener>>) flistener.get(MinecraftForge.EVENT_BUS);
+			for(Object o : listeners.keySet().toArray()) {
+				if(o.getClass().getName().equals("club.skylegion.HypixelP")) {
+					MinecraftForge.EVENT_BUS.unregister(o);
+					removedEvent = o;
+					System.out.println(o);
+					break;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		this.partyMembers = new ArrayList<String>();
 		checkingForParty = true;
 		mc.thePlayer.sendChatMessage("/p list");
@@ -134,6 +156,10 @@ public class GuildMonitor {
 			updatedParty = false;
 		}
 		updateNameTags();
+		System.out.println(removedEvent);
+		if(removedEvent!=null) {
+			MinecraftForge.EVENT_BUS.register(removedEvent);
+		}
 	}
 	
 	@SubscribeEvent

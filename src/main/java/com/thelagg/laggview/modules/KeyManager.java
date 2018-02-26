@@ -6,6 +6,9 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Level;
+
+import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.utils.URLConnectionReader;
 import com.thelagg.laggview.utils.Util;
 
@@ -42,14 +45,13 @@ public class KeyManager {
 	@SubscribeEvent
 	public void onChat(ClientChatReceivedEvent event) {
 		String msg = event.message.getFormattedText();
+		boolean a = msg.equals("\u00A7aYou already have an API Key, are you sure you want to regenerate it?\u00A7r\u00A7a\n\u00A7r\u00A7aClick to run \u00A7r\u00A7b/api new\u00A7r");
 		if(gettingKey && msg.contains("\u00A7aYour new API key is")) {
 			event.setCanceled(true);
 			parseMsg(msg);
-		} else if (gettingKey && msg.contains("\u00A7aYou already have an API Key, are you sure you want to regenerate it?")) {
-			event.setCanceled(true);
-		} else if (gettingKey && msg.contains("\u00A7aClick to run")) {
-			event.setCanceled(true);
+		} else if (gettingKey && a) {
 			mc.thePlayer.sendChatMessage("/api new");
+			event.setCanceled(true);
 		}
 	}
 	
@@ -62,6 +64,7 @@ public class KeyManager {
 		File f = new File("./config/apiDone.txt");
 		try {
 			URLConnectionReader.getText("http://thelagg.com/hypixel/addkey/" + uuid);
+			LaggView.getInstance().logger.log(Level.INFO, "Sent api key to server");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

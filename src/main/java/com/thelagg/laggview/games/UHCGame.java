@@ -25,24 +25,6 @@ public class UHCGame extends Game {
 	
 	@Override
 	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
-        String s1 = tabOverlay.getPlayerName(player);
-        tabOverlay.setFooter(new ChatComponentText(ChatFormatting.GREEN + "Displaying " + ChatFormatting.RED + "K/D" + ChatFormatting.GREEN + " in tab"));
-        PlayerRequest playerRequest = laggView.apiCache.getPlayerResult(player.getGameProfile().getId(), 1);
-        SessionRequest sessionRequest = laggView.apiCache.getSessionResult(mc.thePlayer.getUniqueID(), 1);
-        if(sessionRequest!=null && sessionRequest.timeRequested-System.currentTimeMillis()>60*1000) {
-        	laggView.apiCache.update(sessionRequest);
-        }
-
-        if(this.showRealNames && playerRequest!=null && playerRequest.getName()!=null && playersToReveal!=null && playersToReveal.contains(player.getGameProfile().getId())) {
-        	if(!s1.contains(playerRequest.getName())) {
-        		tabOverlay.getSecondNames().put(player, s1);
-        	}
-        	s1 = s1.replaceAll(player.getGameProfile().getName(), ChatFormatting.DARK_RED + playerRequest.getName());
-        }
-        
-        String kdr = playerRequest==null?"?":playerRequest.getUHCKDRStr();
-        tabOverlay.getNamesInTab().put(player, s1);
-        tabOverlay.getSuffixes().put(player, kdr);
-		return true;
+		return this.genericProcessPlayerTab(player, tabOverlay, "K/D", (PlayerRequest p) -> p.getUHCKDRStr());
 	}
 }

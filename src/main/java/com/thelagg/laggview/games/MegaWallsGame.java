@@ -175,6 +175,6 @@ public class MegaWallsGame extends Game {
 	
 	@Override
 	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
-		return this.genericProcessPlayerTab(player, tabOverlay, "Post-Update Final K/D", (PlayerRequest p) -> p.getMWFinalKDRStr(), (String s1) -> (s1.replaceAll("\u00A7.\\[.] ", "").replaceAll("\u00A77( |)\\[...]", "")));		
+		return this.genericProcessPlayerTab(player, tabOverlay, "Post-Update Final K/D", (PlayerRequest p) -> p.getMWFinalKDRStr(), (String s1) -> (s1.replaceAll("\u00A7.\\[.] ", "").replaceAll("\u00A77( |)\\[...]", "")), (String s) -> s.replaceAll("\u00A7k", ""));		
 	}
 }
