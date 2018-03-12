@@ -17,7 +17,13 @@ import org.json.simple.parser.JSONParser;
 
 import com.thelagg.laggview.LaggView;
 
+import net.minecraftforge.common.config.Configuration;
+
+@Deprecated
 public class Settings {
+	
+	private Configuration config;
+	
 	private String toggleRecordingOnHotkey;
 	private String toggleRecordingOffHotkey;
 	private List<String> hackersToRecord;

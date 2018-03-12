@@ -165,11 +165,36 @@ public class GuildMonitor {
 	@SubscribeEvent
 	public void onPlayerName(PlayerEvent.NameFormat event) {
 		UUID uuid = event.entityPlayer.getUniqueID();
-		if(partyMembers.contains(event.username)) {
-			event.displayname = event.displayname + ChatFormatting.DARK_BLUE + " [P]";
+		switch(laggView.config.getGuildPartyTagSetting()) {
+		case PARTY_ONLY:
+			if(partyMembers.contains(event.username)) {
+				event.displayname = event.displayname + ChatFormatting.DARK_BLUE + " [P]";
+			}
+			break;
+		case GUILD_ONLY:
+			if(guildMembers.contains(uuid)) {
+				event.displayname = event.displayname + ChatFormatting.DARK_GREEN + " [G]";
+			}
+			break;
+		case PARTY_TAKES_PRIORITY:
+			if(partyMembers.contains(event.username)) {
+				event.displayname = event.displayname + ChatFormatting.DARK_BLUE + " [P]";
+			} else if(guildMembers.contains(uuid)) {
+				event.displayname = event.displayname + ChatFormatting.DARK_GREEN + " [G]";
+			}
+			break;
+		case BOTH:
+			if(partyMembers.contains(event.username)) {
+				event.displayname = event.displayname + ChatFormatting.DARK_BLUE + " [P]";
+			} 
+			if(guildMembers.contains(uuid)) {
+				event.displayname = event.displayname + ChatFormatting.DARK_GREEN + " [G]";
+			}
+			break;
+		case NONE:
+		default:
+			break;
 		}
-		if(guildMembers.contains(uuid)) {
-			event.displayname = event.displayname + ChatFormatting.DARK_GREEN + " [G]";
-		}
+
 	}
 }

@@ -20,6 +20,17 @@ public class PlayerRequest extends ApiRequest {
 		this.apiCache = apiCache;
 	}
 
+	public void updateRequest() {
+		JSONObject json = new JSONObject();
+		try {
+			JSONParser parser = new JSONParser();
+			json = (JSONObject) parser.parse(URLConnectionReader.getText("http://thelagg.com/hypixel/raw/player/" + this.uuid + "/refresh"));
+		} catch (ParseException | IOException e) {
+			e.printStackTrace();
+		}
+		this.result = json;
+	}
+	
 	@Override
 	public void processRequest() {
 		JSONObject json = new JSONObject();
@@ -42,8 +53,10 @@ public class PlayerRequest extends ApiRequest {
 		try {
 			Long experience = (Long) this.getObjectAtPath("player/networkExp");
 			return getExactLevel(experience);
-		} catch (ClassCastException | NullPointerException e) {
+		} catch (ClassCastException e) {
 			e.printStackTrace();
+			return 0;
+		} catch (NullPointerException e) {
 			return 0;
 		}
 	}

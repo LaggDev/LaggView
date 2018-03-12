@@ -7,8 +7,8 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.hud.TabOverlay;
-import com.thelagg.laggview.hud.Hud.HudText;
-import com.thelagg.laggview.hud.Hud.Priority;
+import com.thelagg.laggview.hud.MainHud.HudText;
+import com.thelagg.laggview.hud.MainHud.Priority;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetworkPlayerInfo;

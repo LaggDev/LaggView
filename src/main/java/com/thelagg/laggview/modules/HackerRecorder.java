@@ -30,6 +30,7 @@ import net.minecraft.util.IChatComponent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
+@Deprecated
 public class HackerRecorder {
 	private List<String> hackerList;
 	Minecraft mc;

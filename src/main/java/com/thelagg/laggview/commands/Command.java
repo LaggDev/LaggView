@@ -26,6 +26,7 @@ import com.thelagg.laggview.utils.Util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -131,15 +132,16 @@ public class Command extends CommandBase {
 			new HotkeyGui(laggView.hackerRecorder.getStartRecordingHotkey(),laggView.hackerRecorder.getStopRecordingHotkey(),laggView);
 			break;
 		case "test":
-			new Thread() {
+			//new DelayedTask(() -> Minecraft.getMinecraft().displayGuiScreen(new ConfigGui()), 1);
+			/*new Thread() {
 				public void run() {
 					GuildRequest r = laggView.apiCache.getGuildResult(UUID.fromString(args[1]), 0);
 					Util.print(Boolean.toString(r==null));
 					Util.print(Arrays.toString(r.getUUIDs().toArray()));
 				}
-			}.start();
+			}.start();*/
 			
-			/*GuiPlayerTabOverlay tab1 = Minecraft.getMinecraft().ingameGUI.getTabList();
+			GuiPlayerTabOverlay tab1 = Minecraft.getMinecraft().ingameGUI.getTabList();
 			if(tab1 instanceof TabOverlay) {
 				TabOverlay tab = (TabOverlay)tab1;
 				for(NetworkPlayerInfo playerInfo : tab.getCurrentlyDisplayedPlayers()) {
@@ -163,7 +165,7 @@ public class Command extends CommandBase {
 						}
 					}
 				}
-			}*/
+			}
 			break;
 		case "parties":
 			Game g = LaggView.getInstance().gameUpdater.getCurrentGame();

@@ -2,6 +2,8 @@ package com.thelagg.laggview.games;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -19,15 +21,18 @@ import com.thelagg.laggview.apirequests.SessionRequest;
 import com.thelagg.laggview.apirequests.StatGetter;
 import com.thelagg.laggview.apirequests.StringReplacer;
 import com.thelagg.laggview.hud.TabOverlay;
-import com.thelagg.laggview.hud.Hud.HudText;
-import com.thelagg.laggview.hud.Hud.Priority;
+import com.thelagg.laggview.hud.MainHud.HudText;
+import com.thelagg.laggview.hud.MainHud.Priority;
 import com.thelagg.laggview.utils.URLConnectionReader;
+import com.thelagg.laggview.utils.Util;
 
 import akka.event.EventBus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.network.play.client.C01PacketChatMessage;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
@@ -79,7 +84,8 @@ public class Game {
 		HYPIXEL_ZOMBIES("ZOMBIES"),
 		DUELS("DUELS"),
 		MAIN_LOBBY("HYPIXEL"),
-		LOBBY("LOBBY");
+		LOBBY("LOBBY"),
+		UNKNOWN("UNKNOWN");
 		
 		private String nameOnScoreboard;
 		
@@ -107,6 +113,10 @@ public class Game {
 	protected LaggView laggView;
 	protected List<UUID> playersToReveal;
 	protected boolean showRealNames = true;
+	private NetworkPlayerInfo[] lastTickPlayers;
+	private ArrayList<Object[]> joins = new ArrayList<Object[]>();
+	private ArrayList<Object[]> leaves = new ArrayList<Object[]>();
+	
 	
 	public Game(GameType type, String serverId, Minecraft mc, LaggView laggView) {
 		this.laggView = laggView;
@@ -179,16 +189,63 @@ public class Game {
 		}.start();
 	}
 	
+	public void processJoinLeave(NetworkPlayerInfo[] players) {
+		if(lastTickPlayers!=null) {
+			for(NetworkPlayerInfo p : players) {
+				boolean found = false;
+				for(NetworkPlayerInfo o : lastTickPlayers) {
+					if(p.getGameProfile().getName().equals(o.getGameProfile().getName())) {
+						found = true;
+						break;
+					}
+				}
+				if(!found) {
+					Object[] arr = new Object[] {p, System.currentTimeMillis()};
+					joins.add(arr);
+				}
+			}
+			for(NetworkPlayerInfo o : lastTickPlayers) {
+				boolean found = false;
+				for(NetworkPlayerInfo p : players) {
+					if(p.getGameProfile().getName().equals(o.getGameProfile().getName())) {
+						found = true;
+						break;
+					}
+				}
+				if(!found) {
+					Object[] arr = new Object[] {o, System.currentTimeMillis()};
+					leaves.add(arr);
+				}
+			}
+		}
+		lastTickPlayers = players;
+	}
+	
 	@SubscribeEvent
 	public void onTick(ClientTickEvent event) {
 		if(Minecraft.getMinecraft().ingameGUI.getTabList() instanceof TabOverlay) {
 			TabOverlay tab = (TabOverlay)Minecraft.getMinecraft().ingameGUI.getTabList();
 			NetworkPlayerInfo[] players = tab.getCurrentlyDisplayedPlayers();
+			processJoinLeave(players);
 			for(NetworkPlayerInfo player : players) {
 				if(!laggView.apiCache.playerCache.containsKey(player.getGameProfile().getId())) {
 					laggView.apiCache.getPlayerResult(player.getGameProfile().getId(), 5);
 				}
 			}
+		}
+	}
+	
+	public void checkBanMsg(String msg) {
+		if(msg.equals("\u00A7r\u00A7c\u00A7lA player has been removed from your game for hacking or abuse. \u00A7r\u00A7bThanks for reporting it!\u00A7r")) {
+			Object[] last = this.leaves.get(leaves.size()-1);
+			NetworkPlayerInfo p = (NetworkPlayerInfo) last[0];
+			long time = (long)last[1];
+			PlayerRequest r = laggView.apiCache.getPlayerResult(p.getGameProfile().getId(), 0);
+			String name = p.getDisplayName().toString();
+			if(r!=null && !r.getName().equals(p.getGameProfile().getName())) {
+				name += " (" + r.getName() + ")";
+			}
+			Util.print("[LaggView] Last player to leave was: " + name + " at " + new SimpleDateFormat("KK:mm:ssa").format(new Date(time)));
 		}
 	}
 	
@@ -220,7 +277,13 @@ public class Game {
 							if(playerInfo.getGameProfile().getName().equals(playerName)) {
 								UUID uuid = playerInfo.getGameProfile().getId();
 								try {
-									URLConnectionReader.getText("http://thelagg.com/hypixel/reportPlayer/" + uuid.toString());
+									int reportsLeft = Integer.parseInt(URLConnectionReader.getText("http://thelagg.com/hypixel/reportPlayer/" + uuid.toString()));
+									IChatComponent number = new ChatComponentText(Integer.toString(reportsLeft) + " ");
+									IChatComponent endOfMsg = new ChatComponentText("more reports until that user is marked for all laggview users");
+									number.getChatStyle().setColor(EnumChatFormatting.RED);
+									endOfMsg.getChatStyle().setColor(EnumChatFormatting.GOLD);
+									number.appendSibling(endOfMsg);
+									Util.print(number);
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
@@ -302,14 +365,44 @@ public class Game {
 		}
 	}
 
+	/**
+	 * This method is to be overridden by child classes who want to change the stat that's displayed in tab.
+	 * 
+	 * @param player the player's NetworkPlayerInfo, to indicate the player whose name is being loaded
+	 * @param tabOverlay the tabOverlay that's sending the request
+	 * @return
+	 */
 	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
-		return false;
+		return this.genericProcessPlayerTab(player, tabOverlay, "Network Level", (PlayerRequest p) -> p.getNetworkLevelStr());
 	}
 	
+	/**
+	 * 
+	 * The more generic method used for processPlayerTab(), that doesn't change anything when adding a second name for a hacker or when unscrambling names in tab
+	 * 
+	 * @param player
+	 * @param tabOverlay
+	 * @param statname
+	 * @param statGetter
+	 * @return
+	 */
 	public boolean genericProcessPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay, String statname, StatGetter statGetter) {
 		return this.genericProcessPlayerTab(player, tabOverlay, statname, statGetter, (String s) -> s, (String s) -> s.replaceAll("\u00A7k", ""));
 	}
 	
+	
+	/**
+	 * 
+	 * The less generic method used for processPlayerTab()
+	 * 
+	 * @param player
+	 * @param tabOverlay
+	 * @param statname
+	 * @param statGetter
+	 * @param secondNameReplacer
+	 * @param unscrambler
+	 * @return
+	 */
 	public boolean genericProcessPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay, String statname, StatGetter statGetter, StringReplacer secondNameReplacer, StringReplacer unscrambler) {
         String s1 = tabOverlay.getPlayerName(player);
         s1 = unscrambler.replaceStr(s1);

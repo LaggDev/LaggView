@@ -30,13 +30,14 @@ import com.thelagg.laggview.commands.Command;
 import com.thelagg.laggview.commands.TeamInvite;
 import com.thelagg.laggview.hud.GameUpdater;
 import com.thelagg.laggview.hud.GuiOverlay;
-import com.thelagg.laggview.hud.Hud;
+import com.thelagg.laggview.hud.MainHud;
 import com.thelagg.laggview.hud.TabOverlay;
 import com.thelagg.laggview.modules.DiscordListener;
 import com.thelagg.laggview.modules.GuildMonitor;
 import com.thelagg.laggview.modules.HackerRecorder;
 import com.thelagg.laggview.modules.KeyManager;
 import com.thelagg.laggview.modules.MyPacketHandler;
+import com.thelagg.laggview.settings.Config;
 import com.thelagg.laggview.settings.Settings;
 import com.thelagg.laggview.utils.URLConnectionReader;
 import com.thelagg.laggview.utils.Util;
@@ -46,6 +47,8 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -59,7 +62,7 @@ import net.minecraftforge.fml.common.eventhandler.IEventListener;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
-@Mod(modid = LaggView.MODID, version = "1.0", name = "Lagg View", acceptedMinecraftVersions = "[1.8.9]", useMetadata = true)
+@Mod(modid = LaggView.MODID, version = "1.0", name = "Lagg View", acceptedMinecraftVersions = "[1.8.9]", guiFactory = "com.thelagg.laggview.settings.LaggViewGuiFactory", useMetadata = true)
 public class LaggView {
 	public static final String MODID = "laggview";
 	Minecraft mc;
@@ -69,14 +72,22 @@ public class LaggView {
 	public static LaggView instance;
 	private long lastLogin;
 	public GameUpdater gameUpdater;
-	public Hud hud;
+	public MainHud hud;
 	public Logger logger;
+	public Config config;
 	public Settings settings;
 	public HudPropertyApi hudProperty;
 	public DiscordListener discordListener;
 	private boolean warnedAboutIncompatibility = false;
 	private String[] incompatibleMods = new String[] {"sidebarmod","oldanimations"};
 	private Timer timer;
+	
+	@EventHandler
+	public void preInit(FMLPreInitializationEvent event) {
+		config = new Config();
+		config.init(event.getSuggestedConfigurationFile());
+		MinecraftForge.EVENT_BUS.register(new Config());
+	}
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
@@ -100,7 +111,7 @@ public class LaggView {
 			}
         }, 0, 10);
         MinecraftForge.EVENT_BUS.register(gameUpdater = new GameUpdater(mc,this));
-        this.hud = new Hud(this,mc);
+        this.hud = new MainHud(this,mc);
         new Thread(() -> loadDiscordListener()).start();
         try {
 			incompatibleMods = URLConnectionReader.getText("http://thelagg.com/hypixel/incompatiblemods").split(",");

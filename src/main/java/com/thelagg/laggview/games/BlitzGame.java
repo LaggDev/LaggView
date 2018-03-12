@@ -8,8 +8,8 @@ import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
 import com.thelagg.laggview.hud.TabOverlay;
-import com.thelagg.laggview.hud.Hud.HudText;
-import com.thelagg.laggview.hud.Hud.Priority;
+import com.thelagg.laggview.hud.MainHud.HudText;
+import com.thelagg.laggview.hud.MainHud.Priority;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetworkPlayerInfo;
@@ -47,7 +47,7 @@ public class BlitzGame extends Game {
 	
 	@Override
 	public boolean processPlayerTab(NetworkPlayerInfo player, TabOverlay tabOverlay) {
-		return this.genericProcessPlayerTab(player, tabOverlay, "K/D", (PlayerRequest p) -> p.getBsgKDRStr(), (String s) -> s, (String s) -> s.replaceFirst("XXXXX", "").replaceAll("\u00A7k", ""));
+		return this.genericProcessPlayerTab(player, tabOverlay, "K/D", (PlayerRequest p) -> p.getBsgKDRStr(), (String s) -> s, (String s) -> s.replaceFirst("XXXX", "").replaceAll("\u00A7k", ""));
 	}
 
 }

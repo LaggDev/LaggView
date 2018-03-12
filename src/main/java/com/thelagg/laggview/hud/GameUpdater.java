@@ -94,48 +94,51 @@ public class GameUpdater {
 				} else {
 					String str = event.world.getScoreboard().getObjectiveInDisplaySlot(1).getDisplayName();
 					laggView.logger.log(Level.INFO,"GAME: " + str + " " + System.currentTimeMillis());
+					
+					Game.GameType match = Game.GameType.UNKNOWN;
 					for(Game.GameType type : Game.GameType.values()) {
 						if(type.getNameOnScoreboard().equals(str.replaceAll("\u00A7.{1}", "").trim())) {
-							laggView.logger.log(Level.INFO, "MATCHED WITH: " + type.name());
-							long timeOut = 5000;
-							long start2 = System.currentTimeMillis();
-							waitingForServerId = true;
-							Minecraft.getMinecraft().thePlayer.sendChatMessage("/whereami");
-							long time = System.currentTimeMillis();
-							while(waitingForServerId && (time = System.currentTimeMillis())-start2<timeOut) {
-								try {
-									Thread.sleep(50);
-								} catch (InterruptedException e) {
-									e.printStackTrace();
-								}
-							}
-							String id = serverId;
-							if(time-start2>=timeOut) {
-								waitingForServerId = false;
-								currentGame = null;
-							} else if (id.toLowerCase().contains("lobby") || id.equals("limbo")) {
-								Game alreadyExisted = findGame(Game.GameType.LOBBY,id);
-								if(alreadyExisted==null) {
-									currentGame = createGame(Game.GameType.LOBBY,id);
-									allGames.add(currentGame);
-								} else {
-									alreadyExisted.enter();
-									currentGame = alreadyExisted;
-								}
-							} else {
-								Game alreadyExisted = findGame(type,id);
-								if(alreadyExisted==null) {
-									currentGame = createGame(type,id);
-									allGames.add(currentGame);
-								} else {
-									alreadyExisted.enter();
-									currentGame = alreadyExisted;
-								}
-							}
-							gettingGame = false;
-							break;
+							match = type;
 						}
-					}	
+					}
+					
+					laggView.logger.log(Level.INFO, "MATCHED WITH: " + match.name());
+					long timeOut = 5000;
+					long start2 = System.currentTimeMillis();
+					waitingForServerId = true;
+					Minecraft.getMinecraft().thePlayer.sendChatMessage("/whereami");
+					long time = System.currentTimeMillis();
+					while(waitingForServerId && (time = System.currentTimeMillis())-start2<timeOut) {
+						try {
+							Thread.sleep(50);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					String id = serverId;
+					if(time-start2>=timeOut) {
+						waitingForServerId = false;
+						currentGame = null;
+					} else if (id.toLowerCase().contains("lobby") || id.equals("limbo")) {
+						Game alreadyExisted = findGame(Game.GameType.LOBBY,id);
+						if(alreadyExisted==null) {
+							currentGame = createGame(Game.GameType.LOBBY,id);
+							allGames.add(currentGame);
+						} else {
+							alreadyExisted.enter();
+							currentGame = alreadyExisted;
+						}
+					} else {
+						Game alreadyExisted = findGame(match,id);
+						if(alreadyExisted==null) {
+							currentGame = createGame(match,id);
+							allGames.add(currentGame);
+						} else {
+							alreadyExisted.enter();
+							currentGame = alreadyExisted;
+						}
+					}
+					gettingGame = false;
 				}
 				if(gettingGame) {
 					currentGame = null;

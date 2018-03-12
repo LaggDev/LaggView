@@ -20,8 +20,8 @@ import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
 import com.thelagg.laggview.hud.GuiOverlay;
 import com.thelagg.laggview.hud.TabOverlay;
-import com.thelagg.laggview.hud.Hud.HudText;
-import com.thelagg.laggview.hud.Hud.Priority;
+import com.thelagg.laggview.hud.MainHud.HudText;
+import com.thelagg.laggview.hud.MainHud.Priority;
 import com.thelagg.laggview.utils.URLConnectionReader;
 import com.thelagg.laggview.utils.Util;
 
