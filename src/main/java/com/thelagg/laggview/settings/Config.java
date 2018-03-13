@@ -19,6 +19,7 @@ public class Config {
 	private GuildPartyTagSetting guildPartyTagSetting;	
 	private double questHudX;
 	private double questHudY;
+	private boolean openStatsInBrowser;
 	
 	public GuildPartyTagSetting getGuildPartyTagSetting() {
 		return guildPartyTagSetting;
@@ -37,7 +38,8 @@ public class Config {
 		questHudX = config.getFloat("questHudX", "general", 0.0f, 0.0f, 1.0f, "Relative X-position of the quest HUD");
 		questHudY = config.getFloat("questHudY", "general", 0.0f, 0.0f, 1.0f, "Relative Y-position of the quest HUD");
 		guildPartyTagSetting = GuildPartyTagSetting.valueOf(config.getString("Guild/Party Tag Setting", "general", GuildPartyTagSetting.PARTY_TAKES_PRIORITY.toString(), "Displays [P] or [G] after someone's name if they're in your party/guild", GuildPartyTagSetting.getValues()));
-				
+		openStatsInBrowser = getBoolean(config,"openStatsInBrowser","general",true,"When running /lagg stats or /lagg session, your default web browser will be opened automatically. If false, it will paste a link into chat.");
+		
 		if(config.hasChanged()) config.save();
 	}
 	
@@ -64,6 +66,10 @@ public class Config {
 	
 	public Configuration getConfig() {
 		return config;
+	}
+	
+	public boolean getOpenStatsInBrowser() {
+		return this.openStatsInBrowser;
 	}
 	
 	public void setQuestHudX(double d) {

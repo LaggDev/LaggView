@@ -1,7 +1,11 @@
 package com.thelagg.laggview.commands;
 
+import java.awt.Desktop;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -216,15 +220,33 @@ public class Command extends CommandBase {
 			if(args.length<2) {
 				Util.print("/lagg stats <player>");
 			} else {
-				IChatComponent text = ForgeHooks.newChatWithLinks("thelagg.com/hypixel/player/" + args[1]);
-				text.setChatStyle(text.getChatStyle().setColor(EnumChatFormatting.GOLD));
-				Util.print(text);
+				String url = "http://thelagg.com/hypixel/player/" + args[1];
+				if(laggView.config.getOpenStatsInBrowser() && Desktop.isDesktopSupported()) {
+					try {
+						Desktop.getDesktop().browse(new URI(url));
+					} catch (IOException | URISyntaxException e) {
+						e.printStackTrace();
+					}
+				} else {
+					IChatComponent text = ForgeHooks.newChatWithLinks(url);
+					text.setChatStyle(text.getChatStyle().setColor(EnumChatFormatting.GOLD));
+					Util.print(text);
+				}
 			}
 			break;
 		case "session":
-			IChatComponent text = ForgeHooks.newChatWithLinks("thelagg.com/hypixel/session/" + sender.getName());
-			text.setChatStyle(text.getChatStyle().setColor(EnumChatFormatting.GOLD));
-			Util.print(text);
+			String url = "http://thelagg.com/hypixel/session/" + sender.getName();
+			if(laggView.config.getOpenStatsInBrowser() && Desktop.isDesktopSupported()) {
+				try {
+					Desktop.getDesktop().browse(new URI(url));
+				} catch (IOException | URISyntaxException e) {
+					e.printStackTrace();
+				}
+			} else {
+				IChatComponent text = ForgeHooks.newChatWithLinks(url);
+				text.setChatStyle(text.getChatStyle().setColor(EnumChatFormatting.GOLD));
+				Util.print(text);
+			}
 			break;
 		case "name":
 			if(args.length<2) {
