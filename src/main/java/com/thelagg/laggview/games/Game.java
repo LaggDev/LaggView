@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.orangemarshall.hudproperty.HudPropertyApi;
 import com.orangemarshall.hudproperty.IRenderer;
+import com.orangemarshall.hudproperty.test.DelayedTask;
 import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
@@ -23,6 +24,7 @@ import com.thelagg.laggview.apirequests.StringReplacer;
 import com.thelagg.laggview.hud.TabOverlay;
 import com.thelagg.laggview.hud.MainHud.HudText;
 import com.thelagg.laggview.hud.MainHud.Priority;
+import com.thelagg.laggview.quests.Quest;
 import com.thelagg.laggview.utils.URLConnectionReader;
 import com.thelagg.laggview.utils.Util;
 
@@ -42,62 +44,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 
 public class Game {
-	
-	public enum GameState {
-		PREGAME,
-		INGAME,
-		POSTGAME
-	}
-	
-	public enum GameType {
-		MEGA_WALLS("MEGA WALLS"),
-		BLITZ_SURVIVAL_GAMES("BLITZ SG"),
-		WARLORDS("WARLORDS"),
-		UHC_CHAMPIONS("HYPIXEL"),
-		THE_TNT_GAMES("THE TNT GAMES"),
-		TNT_RUN("TNT RUN"),
-		BOW_SPLEEF("BOW SPLEEF"),
-		PVP_RUN("PVP RUN"),
-		TNT_TAG("TNT TAG"),
-		WIZARDS("WIZARDS"),
-		COPS_AND_CRIMS("COPS AND CRIMS"),
-		ARCADE_GAMES("ARCADE GAMES"),
-		SPEED_UHC("SPEED UHC"),
-		SKYWARS("SKYWARS"),
-		HOUSING("Housing"),
-		CRAZY_WALLS("CRAZY WALLS"),
-		SMASH_HEROES("SMASH HEROES"),
-		SKYCLASH("SKYCLASH"),
-		BED_WARS("BED WARS"),
-		MURDER_MYSTERY("MURDER MYSTERY"),
-		BUILD_BATTLE("BUILD BATTLE"),
-		PROTOTYPE_GAMES("PROTOTYPE"),
-		THE_WALLS("THE WALLS"),
-		QUAKECRAFT("QUAKECRAFT"),
-		VAMPIREZ("VAMPIREZ"),
-		PAINTBALL_WARFARE("PAINTBALL"),
-		ARENA_BRAWL("ARENA BRAWL"),
-		TURBO_KART_RACERS("TURBO KART RACERS"),
-		CLASSIC_GAMES("CLASSIC GAMES"),
-		BATTLE_ROYALE("BATTLE ROYALE"),
-		HIDE_AND_SEEK("HIDE AND SEEK"),
-		HYPIXEL_ZOMBIES("ZOMBIES"),
-		DUELS("DUELS"),
-		MAIN_LOBBY("HYPIXEL"),
-		LOBBY("LOBBY"),
-		UNKNOWN("UNKNOWN");
-		
-		private String nameOnScoreboard;
-		
-		private GameType(String nameOnScoreboard) {
-			this.nameOnScoreboard = nameOnScoreboard;
-		}
-		
-		public String getNameOnScoreboard() {
-			return this.nameOnScoreboard;
-		}
-		
-	}
 
 	private ArrayList<String> playerNames;
 	private ArrayList<UUID> playerUUIDs;
@@ -116,7 +62,7 @@ public class Game {
 	private NetworkPlayerInfo[] lastTickPlayers;
 	private ArrayList<Object[]> joins = new ArrayList<Object[]>();
 	private ArrayList<Object[]> leaves = new ArrayList<Object[]>();
-	
+	protected Quest[] quests;
 	
 	public Game(GameType type, String serverId, Minecraft mc, LaggView laggView) {
 		this.laggView = laggView;
@@ -129,15 +75,24 @@ public class Game {
 		chatMessages = new ArrayList<ChatMessage>();
 		parties = new ArrayList<ArrayList<String>>();
 		coins = 0;
-		MinecraftForge.EVENT_BUS.register(this);
 		lastPartyMessage = new Object[] {0,"test"};
 		hudText = new ArrayList<HudText>();
 		updateHudText(new HudText(Priority.COINS,ChatFormatting.GOLD + "Coins: " + coins));
-		new Thread() {
-			public void run() {
-				updatePlayersToReveal();
+		enter();
+		quests = new Quest[0];
+	}
+	
+	public Quest[] getQuests() {
+		return quests;
+	}
+	
+	protected Quest getQuest(String name) {
+		for(Quest q : quests) {
+			if(q.getName().equals(name)) {
+				return q;
 			}
-		}.start();
+		}
+		return null;
 	}
 	
 	private void updatePlayersToReveal() {
@@ -180,6 +135,14 @@ public class Game {
 		MinecraftForge.EVENT_BUS.unregister(this);
 	}
 	
+	public boolean shouldDelete() {
+		return System.currentTimeMillis()-this.timeJoined>1000*60*80;
+	}
+	
+	public void setOld() {
+		this.serverId = this.serverId + " old";
+	}
+	
 	public void enter() {
 		MinecraftForge.EVENT_BUS.register(this);
 		new Thread() {
@@ -187,6 +150,7 @@ public class Game {
 				updatePlayersToReveal();
 			}
 		}.start();
+		new DelayedTask(()->laggView.questTracker.updatePlayer(),1);
 	}
 	
 	public void processJoinLeave(NetworkPlayerInfo[] players) {
@@ -450,6 +414,62 @@ public class Game {
 		public String getMsg() {
 			return this.msg;
 		}
+	}
+	
+	public enum GameState {
+		PREGAME,
+		INGAME,
+		POSTGAME
+	}
+	
+	public enum GameType {
+		MEGA_WALLS("MEGA WALLS"),
+		BLITZ_SURVIVAL_GAMES("BLITZ SG"),
+		WARLORDS("WARLORDS"),
+		UHC_CHAMPIONS("HYPIXEL"),
+		THE_TNT_GAMES("THE TNT GAMES"),
+		TNT_RUN("TNT RUN"),
+		BOW_SPLEEF("BOW SPLEEF"),
+		PVP_RUN("PVP RUN"),
+		TNT_TAG("TNT TAG"),
+		WIZARDS("WIZARDS"),
+		COPS_AND_CRIMS("COPS AND CRIMS"),
+		ARCADE_GAMES("ARCADE GAMES"),
+		SPEED_UHC("SPEED UHC"),
+		SKYWARS("SKYWARS"),
+		HOUSING("Housing"),
+		CRAZY_WALLS("CRAZY WALLS"),
+		SMASH_HEROES("SMASH HEROES"),
+		SKYCLASH("SKYCLASH"),
+		BED_WARS("BED WARS"),
+		MURDER_MYSTERY("MURDER MYSTERY"),
+		BUILD_BATTLE("BUILD BATTLE"),
+		PROTOTYPE_GAMES("PROTOTYPE"),
+		THE_WALLS("THE WALLS"),
+		QUAKECRAFT("QUAKECRAFT"),
+		VAMPIREZ("VAMPIREZ"),
+		PAINTBALL_WARFARE("PAINTBALL"),
+		ARENA_BRAWL("ARENA BRAWL"),
+		TURBO_KART_RACERS("TURBO KART RACERS"),
+		CLASSIC_GAMES("CLASSIC GAMES"),
+		BATTLE_ROYALE("BATTLE ROYALE"),
+		HIDE_AND_SEEK("HIDE AND SEEK"),
+		HYPIXEL_ZOMBIES("ZOMBIES"),
+		DUELS("DUELS"),
+		MAIN_LOBBY("HYPIXEL"),
+		LOBBY("LOBBY"),
+		UNKNOWN("UNKNOWN");
+		
+		private String nameOnScoreboard;
+		
+		private GameType(String nameOnScoreboard) {
+			this.nameOnScoreboard = nameOnScoreboard;
+		}
+		
+		public String getNameOnScoreboard() {
+			return this.nameOnScoreboard;
+		}
+		
 	}
 	
 }

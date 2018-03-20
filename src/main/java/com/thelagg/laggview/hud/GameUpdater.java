@@ -1,6 +1,7 @@
 package com.thelagg.laggview.hud;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,6 +53,10 @@ public class GameUpdater {
 	
 	public Game getCurrentGame() {
 		return currentGame;
+	}
+	
+	public List<Game> getGames() {
+		return allGames;
 	}
 	
 	private boolean isValid(ScoreObjective so) {
@@ -134,8 +139,14 @@ public class GameUpdater {
 							currentGame = createGame(match,id);
 							allGames.add(currentGame);
 						} else {
-							alreadyExisted.enter();
-							currentGame = alreadyExisted;
+							if(alreadyExisted.shouldDelete()) {
+								alreadyExisted.setOld();
+								currentGame = createGame(match,id);
+								allGames.add(currentGame);
+							} else {
+								alreadyExisted.enter();
+								currentGame = alreadyExisted;
+							}
 						}
 					}
 					gettingGame = false;

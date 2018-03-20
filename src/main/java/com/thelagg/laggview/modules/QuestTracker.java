@@ -6,11 +6,14 @@ import java.util.Comparator;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.logging.log4j.Level;
+
 import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.apirequests.GuildRequest;
 import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.games.Game;
 import com.thelagg.laggview.hud.MainHud.HudText;
+import com.thelagg.laggview.quests.Quest;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -43,19 +46,30 @@ public class QuestTracker {
 				timer.schedule(new TimerTask() {
 					@Override
 					public void run() {
-						player.updateRequest();
+						updatePlayer();
 					}
 				}, 0, 1000*60*2);
+				
+			}
+		}.start();
+	}
+	
+	public void updatePlayer() {
+		new Thread() {
+			public void run() {
+				laggView.logger.log(Level.INFO, "Updating quests");
+				player.updateRequest();
+				update();
 			}
 		}.start();
 	}
 	
 	public void update() {
-		
-	}
-
-	public ArrayList<HudText> getText() {
-		return null;
+		for(Game g : laggView.gameUpdater.getGames()) {
+			for(Quest q : g.getQuests()) {
+				q.update(player);
+			}
+		}
 	}
 	
 }

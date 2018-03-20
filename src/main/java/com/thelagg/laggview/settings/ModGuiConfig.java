@@ -16,7 +16,7 @@ import java.util.List;
 public class ModGuiConfig extends GuiConfig {
 	public ModGuiConfig(GuiScreen guiScreen) {
 		super(guiScreen, 
-				new ConfigElement(LaggView.getInstance().config.getConfig().getCategory(Configuration.CATEGORY_GENERAL)).getChildElements(),
+				new ConfigElement(Config.getConfig().getCategory(Configuration.CATEGORY_GENERAL)).getChildElements(),
 		LaggView.MODID,
 		false,
 		false,

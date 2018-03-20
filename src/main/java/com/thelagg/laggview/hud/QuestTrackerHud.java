@@ -11,6 +11,8 @@ import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.games.Game;
 import com.thelagg.laggview.hud.MainHud.HudText;
 import com.thelagg.laggview.modules.QuestTracker;
+import com.thelagg.laggview.quests.Quest;
+import com.thelagg.laggview.settings.Config;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -18,24 +20,23 @@ import net.minecraft.client.gui.FontRenderer;
 public class QuestTrackerHud implements IRenderer {
 
 	private LaggView laggView;
-	private QuestTracker tracker;
 	private Minecraft mc;
 	
-	public QuestTrackerHud(QuestTracker tracker, LaggView laggView, Minecraft mc) {
-		this.tracker = tracker;
+	public QuestTrackerHud(LaggView laggView, Minecraft mc) {
 		this.laggView = laggView;
 		this.mc = mc;
+		laggView.hudProperty.register(this);
 	}
 	
 	@Override
 	public void save(ScreenPosition pos) {
-		laggView.config.setTextHudX(pos.getRelativeX());
-		laggView.config.setTextHudY(pos.getRelativeY());
+		Config.setQuestHudX(pos.getRelativeX());
+		Config.setQuestHudY(pos.getRelativeY());
 	}
 
 	@Override
 	public ScreenPosition load() {
-		return ScreenPosition.fromRelativePosition(laggView.config.getTextHudX(), laggView.config.getTextHudY());
+		return ScreenPosition.fromRelativePosition(Config.getQuestHudX(), Config.getQuestHudY());
 	}
 
 	@Override
@@ -64,13 +65,23 @@ public class QuestTrackerHud implements IRenderer {
 
 	@Override
 	public void render(ScreenPosition position) {
-		ArrayList<HudText> text = tracker.getText();
+		Game g = laggView.gameUpdater.getCurrentGame();
+		if(g==null) return;
+		ArrayList<String> text = new ArrayList<String>();
+		
+		for(Quest q : g.getQuests()) {
+			String s = q.toString();
+			for(String s2 : s.split("\n")) {
+				text.add(s2);
+			}
+		}
+		
 		FontRenderer fr = mc.fontRendererObj;
 		int height = fr.FONT_HEIGHT;
 		int spaceBetweenLines = height/8;
 		int i = 0;
-		for(HudText textmsg : text) {
-			fr.drawString(textmsg.getMsg(), position.getAbsoluteX(), position.getAbsoluteY() + (height + spaceBetweenLines)*i, -1);			
+		for(String textmsg : text) {
+			fr.drawString(textmsg, position.getAbsoluteX(), position.getAbsoluteY() + (height + spaceBetweenLines)*i, -1);			
 			i++;
 		}
 	}

@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.apirequests.GuildRequest;
+import com.thelagg.laggview.settings.Config;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -165,7 +166,7 @@ public class GuildMonitor {
 	@SubscribeEvent
 	public void onPlayerName(PlayerEvent.NameFormat event) {
 		UUID uuid = event.entityPlayer.getUniqueID();
-		switch(laggView.config.getGuildPartyTagSetting()) {
+		switch(Config.getGuildPartyTagSetting()) {
 		case PARTY_ONLY:
 			if(partyMembers.contains(event.username)) {
 				event.displayname = event.displayname + ChatFormatting.DARK_BLUE + " [P]";

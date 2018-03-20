@@ -26,9 +26,11 @@ import com.thelagg.laggview.games.MegaWallsGame;
 import com.thelagg.laggview.hud.HotkeyGui;
 import com.thelagg.laggview.hud.TabOverlay;
 import com.thelagg.laggview.modules.MyPacketHandler;
+import com.thelagg.laggview.settings.Config;
 import com.thelagg.laggview.utils.Util;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.network.NetworkPlayerInfo;
@@ -73,6 +75,7 @@ public class Command extends CommandBase {
 		if(args.length<=1) {
 			return getListOfStringsMatchingLastWord(args, "name","record","hud","hotkeys","parties","finals","stats","discord","session");
 		}
+		CommandBase c;
 		switch(args[0]) {
 		case "record":
 			List<String> modifiedList = Util.getPlayerNamesInTab();
@@ -80,8 +83,10 @@ public class Command extends CommandBase {
 			modifiedList.add(0,"list");
 			return getListOfStringsMatchingLastWord(args,modifiedList);
 		case "name":
-		case "stats":
 			return getListOfStringsMatchingLastWord(args,Util.getPlayerNamesInTab());
+		case "stats":
+			c = new StatsCommand();
+			return c.addTabCompletionOptions(sender, removeFirstArg(args), pos);			
 		default:
 			return Lists.newArrayList();
 		}
@@ -93,6 +98,7 @@ public class Command extends CommandBase {
 			Util.print("/lagg [hud|hotkeys|test|parties|finals|record|stats]");
 			return;
 		}
+		CommandBase c;
 		switch(args[0]) {
 		case "discord":
 			if(args[1].equals("mute") && args.length>=3) {
@@ -217,31 +223,18 @@ public class Command extends CommandBase {
 				}
 			break;
 		case "stats":
-			if(args.length<2) {
-				Util.print("/lagg stats <player>");
-			} else {
-				String url = "http://thelagg.com/hypixel/player/" + args[1];
-				if(laggView.config.getOpenStatsInBrowser() && Desktop.isDesktopSupported()) {
-					try {
-						Desktop.getDesktop().browse(new URI(url));
-					} catch (IOException | URISyntaxException e) {
-						e.printStackTrace();
-					}
-				} else {
-					IChatComponent text = ForgeHooks.newChatWithLinks(url);
-					text.setChatStyle(text.getChatStyle().setColor(EnumChatFormatting.GOLD));
-					Util.print(text);
-				}
-			}
+			c = new StatsCommand();
+			c.processCommand(sender, removeFirstArg(args));
 			break;
 		case "session":
 			String url = "http://thelagg.com/hypixel/session/" + sender.getName();
-			if(laggView.config.getOpenStatsInBrowser() && Desktop.isDesktopSupported()) {
+			if(Config.getOpenStatsInBrowser() && Desktop.isDesktopSupported()) {
 				try {
 					Desktop.getDesktop().browse(new URI(url));
 				} catch (IOException | URISyntaxException e) {
 					e.printStackTrace();
 				}
+				new DelayedTask(() -> Minecraft.getMinecraft().displayGuiScreen(new GuiChat()),2);
 			} else {
 				IChatComponent text = ForgeHooks.newChatWithLinks(url);
 				text.setChatStyle(text.getChatStyle().setColor(EnumChatFormatting.GOLD));
@@ -276,5 +269,15 @@ public class Command extends CommandBase {
 		return 0;
 	}
 	
+	public static String[] removeFirstArg(String[] args) {
+		if(args.length==0) {
+			return args;
+		}
+		String[] arr = new String[args.length-1];
+		for(int i = 0; i<arr.length; i++) {
+			arr[i] = args[i+1];
+		}
+		return arr;
+	}
 	
 }

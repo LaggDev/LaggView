@@ -31,12 +31,14 @@ import com.thelagg.laggview.commands.TeamInvite;
 import com.thelagg.laggview.hud.GameUpdater;
 import com.thelagg.laggview.hud.GuiOverlay;
 import com.thelagg.laggview.hud.MainHud;
+import com.thelagg.laggview.hud.QuestTrackerHud;
 import com.thelagg.laggview.hud.TabOverlay;
 import com.thelagg.laggview.modules.DiscordListener;
 import com.thelagg.laggview.modules.GuildMonitor;
 import com.thelagg.laggview.modules.HackerRecorder;
 import com.thelagg.laggview.modules.KeyManager;
 import com.thelagg.laggview.modules.MyPacketHandler;
+import com.thelagg.laggview.modules.QuestTracker;
 import com.thelagg.laggview.settings.Config;
 import com.thelagg.laggview.settings.Settings;
 import com.thelagg.laggview.utils.URLConnectionReader;
@@ -70,22 +72,21 @@ public class LaggView {
 	public GuildMonitor guildMemberMonitor;
 	public ApiCache apiCache;
 	public static LaggView instance;
-	private long lastLogin;
 	public GameUpdater gameUpdater;
 	public MainHud hud;
 	public Logger logger;
-	public Config config;
 	public Settings settings;
 	public HudPropertyApi hudProperty;
 	public DiscordListener discordListener;
 	private boolean warnedAboutIncompatibility = false;
 	private String[] incompatibleMods = new String[] {"sidebarmod","oldanimations"};
 	private Timer timer;
+	public QuestTracker questTracker;
+	public QuestTrackerHud questHud;
 	
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		config = new Config();
-		config.init(event.getSuggestedConfigurationFile());
+		Config.init(event.getSuggestedConfigurationFile());
 		MinecraftForge.EVENT_BUS.register(new Config());
 	}
 	
@@ -118,6 +119,8 @@ public class LaggView {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+        questTracker = new QuestTracker(mc, this);
+        questHud = new QuestTrackerHud(this,mc);
 	}
 	
 	public void loadDiscordListener() {
@@ -236,20 +239,6 @@ public class LaggView {
 		}
 		if(!(mc.ingameGUI.getTabList() instanceof TabOverlay) && mc.ingameGUI instanceof GuiOverlay) {
 			TabOverlay.ReplaceTabOverlay(this, (GuiOverlay)mc.ingameGUI);
-		}
-	}
-	
-	@SubscribeEvent
-	public void onChat(ClientChatReceivedEvent event) {
-		if(event.type==0) {
-			LogManager.getLogger(MODID).log(Level.INFO, event.message.getFormattedText());
-			Matcher m = Pattern.compile("\u00A7r\u00A7.{1}(.*?)\u00A7r\u00A7e has joined \\(\u00A7r\u00A7b\\d+\u00A7r\u00A7e/\u00A7r\u00A7b\\d+\u00A7r\u00A7e\\)!\u00A7r").matcher(event.message.getFormattedText());
-			if(m.find()) {
-				long time = System.currentTimeMillis();
-				long difference = time - lastLogin;
-				LogManager.getLogger(MODID).log(Level.INFO, difference + " " + time + " " + event.message.getFormattedText());
-				lastLogin = time;
-			}
 		}
 	}
 	

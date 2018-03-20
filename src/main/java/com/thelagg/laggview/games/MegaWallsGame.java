@@ -13,6 +13,7 @@ import javax.swing.Timer;
 
 import org.apache.logging.log4j.Level;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.thelagg.laggview.LaggView;
@@ -20,6 +21,7 @@ import com.thelagg.laggview.apirequests.PlayerRequest;
 import com.thelagg.laggview.apirequests.SessionRequest;
 import com.thelagg.laggview.hud.GuiOverlay;
 import com.thelagg.laggview.hud.TabOverlay;
+import com.thelagg.laggview.quests.Quest;
 import com.thelagg.laggview.hud.MainHud.HudText;
 import com.thelagg.laggview.hud.MainHud.Priority;
 import com.thelagg.laggview.utils.URLConnectionReader;
@@ -50,6 +52,18 @@ public class MegaWallsGame extends Game {
 		this.updateHudText(new HudText(Priority.FINAL_ASSISTS,ChatFormatting.LIGHT_PURPLE + "Final Assists: " + finalAssists));
 		this.updateHudText(new HudText(Priority.KILLS,ChatFormatting.LIGHT_PURPLE + "Kills: " + kills));
 		this.updateHudText(new HudText(Priority.ASSISTS,ChatFormatting.LIGHT_PURPLE + "Assists: " + assists));
+		quests = new Quest[] {
+				new Quest("mega_walls_kill","Daily Kills",15),
+				new Quest("mega_walls_win","Daily Wins",1),
+				new Quest("mega_walls_play","Daily Games Played",1),
+				new Quest("mega_walls_weekly","mega_walls_kill_weekly","Weekly Kills",25,"mega_walls_play_weekly","Weekly Games Played",15)
+		};
+		
+	}
+	
+	public MegaWallsGame(String serverId, Minecraft mc, LaggView laggView, Quest[] quests) {
+		this(serverId,mc,laggView);
+		this.quests = quests;
 	}
 	
 	public void printFinalKillsByTeam() {
@@ -67,8 +81,12 @@ public class MegaWallsGame extends Game {
 							char team = m.group(1).charAt(0);
 							String playerName = m.group(4);
 							if(MegaWallsGame.this.playerFinalKills.containsKey(playerName)) {
-								int numberOfFinals = MegaWallsGame.this.playerFinalKills.get(playerName);
-								finalCounts.put(team, finalCounts.get(team)==null?numberOfFinals:(finalCounts.get(team)+numberOfFinals));
+								if(playerName.equals(mc.thePlayer.getName()) && Util.isSpectator()) {
+									finalCounts.put(team, finalKills);
+								} else {
+									int numberOfFinals = MegaWallsGame.this.playerFinalKills.get(playerName);
+									finalCounts.put(team, finalCounts.get(team)==null?numberOfFinals:(finalCounts.get(team)+numberOfFinals));
+								}
 							}
 						} else {
 							laggView.logger.log(Level.INFO, "could not match name for player: " + name);
@@ -147,12 +165,16 @@ public class MegaWallsGame extends Game {
 		if(m.find()) {
 			finalKills++;
 			this.updateHudText(new HudText(Priority.FINAL_KILLS,ChatFormatting.LIGHT_PURPLE + "Final Kills: " + finalKills));
+			getQuest("mega_walls_kill").increaseValue(1);
+			getQuest("mega_walls_weekly").increaseValue("mega_walls_kill_weekly",1);
 		} else if (m2.find()) {
 			finalAssists++;
 			this.updateHudText(new HudText(Priority.FINAL_ASSISTS,ChatFormatting.LIGHT_PURPLE + "Final Assists: " + finalAssists));
 		} else if (m3.find()) {
 			kills++;
 			this.updateHudText(new HudText(Priority.KILLS,ChatFormatting.LIGHT_PURPLE + "Kills: " + kills));
+			getQuest("mega_walls_kill").increaseValue(1);
+			getQuest("mega_walls_weekly").increaseValue("mega_walls_kill_weekly",1);
 		} else if (m4.find()) {
 			assists++;
 			this.updateHudText(new HudText(Priority.ASSISTS,ChatFormatting.LIGHT_PURPLE + "Assists: " + assists));

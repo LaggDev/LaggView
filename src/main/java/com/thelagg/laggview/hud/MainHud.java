@@ -8,6 +8,7 @@ import com.orangemarshall.hudproperty.IRenderer;
 import com.orangemarshall.hudproperty.util.ScreenPosition;
 import com.thelagg.laggview.LaggView;
 import com.thelagg.laggview.games.Game;
+import com.thelagg.laggview.settings.Config;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -64,13 +65,13 @@ public class MainHud implements IRenderer {
 
 	@Override
 	public void save(ScreenPosition pos) {
-		laggView.config.setTextHudX(pos.getRelativeX());
-		laggView.config.setTextHudY(pos.getRelativeY());
+		Config.setTextHudX(pos.getRelativeX());
+		Config.setTextHudY(pos.getRelativeY());
 	}
 
 	@Override
 	public ScreenPosition load() {
-		return ScreenPosition.fromRelativePosition(laggView.config.getTextHudX(), laggView.config.getTextHudY());
+		return ScreenPosition.fromRelativePosition(Config.getTextHudX(), Config.getTextHudY());
 	}
 
 	@Override
@@ -158,7 +159,6 @@ public class MainHud implements IRenderer {
 		int spaceBetweenLines = height/8;
 		int i = 0;
 		for(HudText textmsg : text) {
-			System.out.println(position.getAbsoluteX() + " " + position.getAbsoluteY() + (height + spaceBetweenLines)*i);
 			fr.drawString(textmsg.msg, position.getAbsoluteX(), position.getAbsoluteY() + (height + spaceBetweenLines)*i, -1);			
 			i++;
 		}

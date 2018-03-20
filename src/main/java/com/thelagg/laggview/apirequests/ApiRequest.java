@@ -16,13 +16,12 @@ public abstract class ApiRequest {
 			apiCache.requestQueue.add(this);
 		}
 	}
-	
 
-	protected Object getNextObject(JSONObject j, String search) {
+	public Object getNextObject(JSONObject j, String search) {
 		return j==null?null:j.get(search);
 	}
 	
-	protected Object getObjectAtPath(String pathStr) {
+	public Object getObjectAtPath(String pathStr) {
 		String[] path = pathStr.split("/");
 		JSONObject j = this.result;
 		for(String s : path) {

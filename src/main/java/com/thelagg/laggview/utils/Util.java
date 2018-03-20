@@ -9,6 +9,7 @@ import com.thelagg.laggview.hud.TabOverlay;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.ForgeHooks;
@@ -33,6 +34,20 @@ public class Util {
 			}
 		}
 		return list;
+	}
+	
+	public static boolean isSpectator() {
+		try {
+			Minecraft mc = Minecraft.getMinecraft();
+			if(mc.thePlayer==null || mc.thePlayer.inventory==null) return false;
+			ItemStack item = mc.thePlayer.inventory.getStackInSlot(4);
+			if(item!=null && item.getDisplayName().contains("Spectator Settings")) {
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 	public static UUID getUUID(String str) {
